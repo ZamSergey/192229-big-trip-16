@@ -1,7 +1,7 @@
 # Проект «Большое путешествие»
 
 * Студент: [Sergey Zamaletdinov](https://up.htmlacademy.ru/ecmascript/16/user/192229).
-* Наставник: [Дмитрий Рябинин](https://up.htmlacademy.ru/javascript/24/user/63289).
+* Наставник: [Дмитрий Рябинин](https://up.htmlacademy.ru/ecmascript/16/user/63289).
 
 ---
 
