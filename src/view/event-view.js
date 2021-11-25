@@ -1,4 +1,4 @@
-export const createRoutePoint = () => (
+export const createEventTemplate = () => (
   `<li class="trip-events__item">
     <div class="event">
       <time class="event__date" datetime="2019-03-18">MAR 18</time>
@@ -37,6 +37,4 @@ export const createRoutePoint = () => (
     </div>
   </li>`
 );
-export const createPintsContainer = () => (
-  `<ul class="trip-events__list"></ul>`
-);
+export const createPintsContainer = () => ('<ul class="trip-events__list"></ul>');
