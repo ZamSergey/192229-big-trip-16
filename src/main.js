@@ -5,8 +5,10 @@ import {createEditFormEventTemplate} from './view/evant-edit.js';
 import {createTripInfoTemplate} from './view/trip-info.js';
 import {createEventTemplate, createPintsContainer} from './view/event-view.js';
 import {renderTemplate,RenderPosition} from './view/render.js';
+import {generateNumPoints} from './mock/event.js';
 
 const POINT_COUNT = 3;
+const TEST_POINT_COUNT = 25;
 
 const tripContainer = document.querySelector('.trip-main');
 const menu = document.querySelector('.trip-controls__navigation');
@@ -23,6 +25,9 @@ renderTemplate(sorting,createPintsContainer());
 const contentList = document.querySelector('.trip-events__list');
 renderTemplate(contentList,createEditFormEventTemplate());
 
-for (let i = 0; i < POINT_COUNT; i++ ) {
-  renderTemplate(contentList,createEventTemplate());
+
+const testPoints = generateNumPoints(TEST_POINT_COUNT);
+
+for (let i = 0; i < testPoints.length; i++ ) {
+  renderTemplate(contentList,createEventTemplate(testPoints[i]));
 }
