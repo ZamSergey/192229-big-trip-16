@@ -1,4 +1,5 @@
 import dayjs from 'dayjs';
+const EVENT_TYPES = ['Taxi', 'Bus', 'Train', 'Ship', 'Drive', 'Flight', 'Check-in', 'Sightseeing', 'Restaurant'];
 
 // Функция из интернета по генерации случайного числа из диапазона
 // Источник - https://github.com/you-dont-need/You-Dont-Need-Lodash-Underscore#_random
@@ -16,13 +17,8 @@ const random = (a = 1, b = 0) => {
 };
 
 
-const generateEventType = () => {
-  const eventType = ['Taxi', 'Bus', 'Train', 'Ship', 'Drive', 'Flight', 'Check-in', 'Sightseeing', 'Restaurant'];
+const generateEventType = () => EVENT_TYPES[getRandomInteger(0, EVENT_TYPES.length - 1)];
 
-  const randomIndex = getRandomInteger(0, eventType.length - 1);
-
-  return eventType[randomIndex];
-};
 
 const generateDestinationPoint = () => {
   const destination = ['Москва', 'Санкт-Петербург', 'Тверь', 'Кострома', 'Новгород', 'Ярославль', 'Вологда', 'Краснодар', 'Тихвин', 'Ростов'];
@@ -61,7 +57,8 @@ const generateOffer = (id) => {
   return {
     id: id,
     title: generateofferDescription(),
-    price: getRandomInteger(1,maxPrice)
+    price: getRandomInteger(1,maxPrice),
+    checked: Boolean(getRandomInteger(0, 1))
   };
 };
 
@@ -98,29 +95,29 @@ const generatePictures = () => {
 
 const generateDateStart = () => {
 
-  //Разьборс дат для событий в днях
-  const maxDaysGap = 7;
+  const maxDaysGap = 3;
+  const maxHourGap = 4;
+  const maxMinuteGap = 59;
   const daysGap = getRandomInteger(-maxDaysGap, maxDaysGap);
-
-  return dayjs().add(daysGap, 'day').toDate();
+  const hoursGap = getRandomInteger(-maxHourGap, maxHourGap);
+  const minutesGap = getRandomInteger(-maxMinuteGap, maxMinuteGap);
+  return dayjs().add(daysGap, 'minute').add(hoursGap,'hour').add(minutesGap,'minute').toDate();
 };
 
 const generateDateEnd = (start) => {
-  const maxDaysGap = 7;
-  const daysGap = getRandomInteger(-maxDaysGap, maxDaysGap);
-  return dayjs(start).add(daysGap, 'day').toDate();
+
+  const maxHourGap = 23;
+  const maxMinuteGap = 59;
+  const hoursGap = getRandomInteger(0, maxHourGap);
+  const minutesGap = getRandomInteger(0, maxMinuteGap);
+  return dayjs(start).add(hoursGap,'hour').add(minutesGap,'minute').toDate();
 };
 
 
 const generateDestination = () => ({
   description: generateDescription(),
   name: generateDestinationPoint(),
-  pictures: [
-    {
-      src: "http://picsum.photos/300/200?r=0.0762563005163317",
-      description: ''
-    }
-  ]
+  pictures: generatePictures()
 });
 
 const generatePoint = (id) => {
@@ -129,7 +126,7 @@ const generatePoint = (id) => {
   const typeEvent = generateEventType();
   const point = {
     type: typeEvent,
-    destination: generatePictures(),
+    destination: generateDestination(),
     offers: generateOffers(typeEvent),
     id: id,
     is_favorite: Boolean(getRandomInteger(0, 1)),
@@ -148,4 +145,4 @@ const generateNumPoints = (number) => {
   return data;
 }
 
-export {generateNumPoints};
+export {generateNumPoints,generatePoint,EVENT_TYPES};
