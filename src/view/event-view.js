@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 
-const getDateFormat = (date,format) =>  dayjs(date).format(format);
+const getDateFormat = (date,format) =>  date !== null ? dayjs(date).format(format) : '';
 
 const createOfferTemplate = (offer) => (
   `<li class="event__offer">

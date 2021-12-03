@@ -75,7 +75,6 @@ const generateOffers = (type) => {
   };
 };
 
-
 const generatePicture = () => (
   {
     src:  `http://picsum.photos/248/152?r=${random(0,0.99999)}`,
@@ -85,16 +84,15 @@ const generatePicture = () => (
 
 const generatePictures = () => {
   const maxPictures = 5;
-  const curentMax = getRandomInteger(1,maxPictures);
+  const currentMax = getRandomInteger(1,maxPictures);
   const pictures = [];
-  for(let i = 0; i < curentMax;i++){
+  for(let i = 0; i < currentMax;i++){
     pictures.push(generatePicture());
   }
   return pictures;
 };
 
 const generateDateStart = () => {
-
   const maxDaysGap = 3;
   const maxHourGap = 4;
   const maxMinuteGap = 59;
@@ -105,7 +103,6 @@ const generateDateStart = () => {
 };
 
 const generateDateEnd = (start) => {
-
   const maxHourGap = 23;
   const maxMinuteGap = 59;
   const hoursGap = getRandomInteger(0, maxHourGap);
@@ -143,6 +140,6 @@ const generateNumPoints = (number) => {
     data.push(generatePoint(i));
   }
   return data;
-}
+};
 
 export {generateNumPoints,generatePoint,EVENT_TYPES};

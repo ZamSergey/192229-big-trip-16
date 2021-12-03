@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 import {EVENT_TYPES} from '../mock/event.js';
 
-const getDateFormat = (date,format) =>  dayjs(date).format(format);
+const getDateFormat = (date,format) =>  date !== null ? dayjs(date).format(format) : '';
 
 const createEventType = (event,number) => {
   const eventLow = event.toLowerCase();
@@ -11,13 +11,7 @@ const createEventType = (event,number) => {
   </div>`;
 };
 
-const createEventList = (events) => {
-  let eventList = '';
-  for(let i = 0; i < events.length;i++) {
-    eventList += createEventType(events[i],i);
-  }
-  return eventList;
-};
+const createEventList = (events) => events.map((it, i) => createEventType(it, i)).join('');
 
 const createOffer = (offer) => {
   const {checked,title,price,id} = offer;
@@ -36,11 +30,7 @@ const createOfferList = (offers) => {
   if (offers === null) {
     return '';
   }
-  const offerData = offers.offers;
-  let offerList = '';
-  for(const offer of offerData) {
-    offerList += createOffer(offer);
-  }
+  const offerList = offers.offers.map((it) => createOffer(it)).join('');
   return `<section class="event__section  event__section--offers">
           <h3 class="event__section-title  event__section-title--offers">Offers</h3>
 
@@ -56,47 +46,25 @@ const createDescriptionImage = (image) => {
 };
 
 
-const createDescriptionImageList = (images) => {
-  let imageList = '';
-  for(const image of images) {
-    imageList += createDescriptionImage(image);
-  }
-  return `<div class="event__photos-container"><div class="event__photos-tape">${imageList}</div></div>`;
-};
+const createDescriptionImageList = (destination) => (
+  destination !== null
+    ? `<div class="event__photos-container"><div class="event__photos-tape">${destination.pictures.map((it) => createDescriptionImage(it)).join('')}</div></div>`
+    : ''
+);
 
-const createDescriptionSection = (eventDescription,destinationImages) => (
-  `<section class="event__section  event__section--destination">
-      <h3 class="event__section-title  event__section-title--destination">Destination</h3>
-      <p class="event__destination-description">${eventDescription}</p>
-      ${destinationImages}
-    </section>`
+
+const createDescriptionSection = (destination) => (
+  destination !== null
+    ? `<section class="event__section  event__section--destination">
+        <h3 class="event__section-title  event__section-title--destination">Destination</h3>
+        <p class="event__destination-description">${destination.description}</p>
+            ${createDescriptionImageList(destination)}
+        </section>`
+    : ''
 );
 
 export const createEditFormEventTemplate = (event) => {
   const {dateStart, dateEnd, price, destination, offers,type} = event;
-
-  const destinationImages = destination !== null
-    ? createDescriptionImageList(destination.pictures)
-    : '';
-  const eventDescription = destination !== null
-    ?  createDescriptionSection(destination.description,destinationImages)
-    : '';
-
-  const destinationName = destination !== null
-    ? destination.name
-    : '';
-
-  const startTime = dateStart !== null
-    ? getDateFormat(dateStart,'YY/MM/DD HH:mm')
-    : '';
-
-  const endTime = dateEnd !== null
-    ? getDateFormat(dateEnd,'YY/MM/DD HH:mm')
-    : '';
-
-  const eventOffers = offers !== null
-    ? createOfferList(offers)
-    : '';
 
   return `<li class="trip-events__item">
     <form class="event event--edit" action="#" method="post">
@@ -104,14 +72,13 @@ export const createEditFormEventTemplate = (event) => {
         <div class="event__type-wrapper">
           <label class="event__type  event__type-btn" for="event-type-toggle-1">
             <span class="visually-hidden">Choose event type</span>
-            <img class="event__type-icon" width="17" height="17" src="img/icons/flight.png" alt="Event type icon">
+            <img class="event__type-icon" width="17" height="17" src="img/icons/${type.toLowerCase()}.png" alt="Event type icon">
           </label>
           <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox">
 
           <div class="event__type-list">
             <fieldset class="event__type-group">
               <legend class="visually-hidden">Event type</legend>
-
               ${createEventList(EVENT_TYPES)}
             </fieldset>
           </div>
@@ -121,7 +88,7 @@ export const createEditFormEventTemplate = (event) => {
           <label class="event__label  event__type-output" for="event-destination-1">
             ${type}
           </label>
-          <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destinationName}" list="destination-list-1">
+          <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination !== null ? destination.name : ''}" list="destination-list-1">
           <datalist id="destination-list-1">
             <option value="Amsterdam"></option>
             <option value="Geneva"></option>
@@ -131,10 +98,10 @@ export const createEditFormEventTemplate = (event) => {
 
         <div class="event__field-group  event__field-group--time">
           <label class="visually-hidden" for="event-start-time-1">From</label>
-          <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${startTime}">
+          <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${getDateFormat(dateStart,'YY/MM/DD HH:mm')}">
           &mdash;
           <label class="visually-hidden" for="event-end-time-1">To</label>
-          <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${endTime}">
+          <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${getDateFormat(dateEnd,'YY/MM/DD HH:mm')}">
         </div>
 
         <div class="event__field-group  event__field-group--price">
@@ -152,11 +119,8 @@ export const createEditFormEventTemplate = (event) => {
         </button>
       </header>
       <section class="event__details">
-
-            ${eventOffers}
-
-
-            ${eventDescription}
+            ${createOfferList(offers)}
+            ${createDescriptionSection(destination)}
       </section>
     </form>
   </li>`;
