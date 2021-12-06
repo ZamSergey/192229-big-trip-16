@@ -64,8 +64,12 @@ const createEventTemplate = (event) => {
 };
 export const createPintsContainer = () => ('<ul class="trip-events__list"></ul>');
 
-export default class EventView {
+export class EventView {
   #element = null;
+  #event = null;
+  constructor(event) {
+    this.#event = event;
+  }
 
   get element() {
     if (!this.#element) {
@@ -76,7 +80,7 @@ export default class EventView {
   }
 
   get template() {
-    return createEventTemplate();
+    return createEventTemplate(this.#event);
   }
 
   clearElement() {

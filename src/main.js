@@ -3,7 +3,7 @@ import ControlMenuView from './view/trip-controls.js';
 import TripSortView from './view/trip-sort.js';
 import {createEditFormEventTemplate} from './view/event-edit.js';
 import TripInfoView from './view/trip-info.js';
-import {createPintsContainer} from './view/event-view.js';
+import {createPintsContainer, EventView} from './view/event-view.js';
 import {renderTemplate,renderElement,RenderPosition} from './view/render.js';
 import {generateNumPoints,generatePoint} from './mock/event.js';
 
@@ -34,11 +34,11 @@ const contentList = document.querySelector('.trip-events__list');
 
 const testPoints = generateNumPoints(TEST_POINT_COUNT);
 
-/*for (let i = 0; i < testPoints.length; i++ ) {
+for (let i = 0; i < testPoints.length; i++ ) {
   if(i === 0) {
     renderTemplate(contentList, createEditFormEventTemplate(generatePoint(i)));
   }
   else {
-    renderTemplate(contentList, createEventTemplate(testPoints[i]));
+    renderElement(contentList, new EventView(testPoints[i]).element);
   }
-}*/
+}
