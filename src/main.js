@@ -1,10 +1,10 @@
-import {createTripFilterTemplate} from './view/trip-filters.js';
-import {createTripControlMenuTemplate} from './view/trip-controls.js';
-import {createTripSortTemplate} from './view/trip-sort.js';
+import TripFilterView from './view/trip-filters.js';
+import ControlMenuView from './view/trip-controls.js';
+import TripSortView from './view/trip-sort.js';
 import {createEditFormEventTemplate} from './view/event-edit.js';
-import {createTripInfoTemplate} from './view/trip-info.js';
-import {createEventTemplate, createPintsContainer} from './view/event-view.js';
-import {renderTemplate,RenderPosition} from './view/render.js';
+import TripInfoView from './view/trip-info.js';
+import {createPintsContainer} from './view/event-view.js';
+import {renderTemplate,renderElement,RenderPosition} from './view/render.js';
 import {generateNumPoints,generatePoint} from './mock/event.js';
 
 const TEST_POINT_COUNT = 25;
@@ -22,25 +22,23 @@ const menu = document.querySelector('.trip-controls__navigation');
 const filter = document.querySelector('.trip-controls__filters');
 const sorting = document.querySelector('.trip-events');
 
-renderTemplate(tripContainer, createTripInfoTemplate(), RenderPosition.AFTERBEGIN);
-renderTemplate(menu, createTripControlMenuTemplate());
-renderTemplate(filter, createTripFilterTemplate());
-renderTemplate(sorting, createTripSortTemplate());
+renderElement(tripContainer, new TripInfoView().element, RenderPosition.AFTERBEGIN);
+renderElement(menu, new ControlMenuView().element);
+renderElement(filter, new TripFilterView().element);
+renderElement(sorting, new TripSortView().element);
 
 renderTemplate(sorting, createPintsContainer());
 
 const contentList = document.querySelector('.trip-events__list');
-// renderTemplate(contentList, createEditFormEventTemplate(generatePoint(1)));
-// renderTemplate(contentList, createEditFormEventTemplate(EMPTY_DATA));
 
 
 const testPoints = generateNumPoints(TEST_POINT_COUNT);
 
-for (let i = 0; i < testPoints.length; i++ ) {
+/*for (let i = 0; i < testPoints.length; i++ ) {
   if(i === 0) {
     renderTemplate(contentList, createEditFormEventTemplate(generatePoint(i)));
   }
   else {
     renderTemplate(contentList, createEventTemplate(testPoints[i]));
   }
-}
+}*/
