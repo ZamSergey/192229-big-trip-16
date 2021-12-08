@@ -62,11 +62,12 @@ const createEventTemplate = (event) => {
     </div>
   </li>`;
 };
-export const createPintsContainer = () => ('<ul class="trip-events__list"></ul>');
 
-export class EventView {
+
+export default class EventView {
   #element = null;
   #event = null;
+
   constructor(event) {
     this.#event = event;
   }
@@ -78,6 +79,7 @@ export class EventView {
 
     return this.#element;
   }
+
 
   get template() {
     return createEventTemplate(this.#event);

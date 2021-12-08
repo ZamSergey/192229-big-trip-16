@@ -1,11 +1,12 @@
 import TripFilterView from './view/trip-filters.js';
 import ControlMenuView from './view/trip-controls.js';
 import TripSortView from './view/trip-sort.js';
-import {createEditFormEventTemplate} from './view/event-edit.js';
+import EditFormEvent from './view/event-edit.js';
 import TripInfoView from './view/trip-info.js';
-import {createPintsContainer, EventView} from './view/event-view.js';
-import {renderTemplate,renderElement,RenderPosition} from './view/render.js';
-import {generateNumPoints,generatePoint} from './mock/event.js';
+import EventListContainerView from './view/event-list-view.js';
+import EventView from './view/event-view.js';
+import {renderElement,RenderPosition} from './view/render.js';
+import {generateNumPoints} from './mock/event.js';
 
 const TEST_POINT_COUNT = 25;
 /*const EMPTY_DATA = {type: null,
@@ -27,18 +28,18 @@ renderElement(menu, new ControlMenuView().element);
 renderElement(filter, new TripFilterView().element);
 renderElement(sorting, new TripSortView().element);
 
-renderTemplate(sorting, createPintsContainer());
+renderElement(sorting, new EventListContainerView().element);
 
 const contentList = document.querySelector('.trip-events__list');
 
+generateNumPoints(TEST_POINT_COUNT).map((it) => {
+  const editForm = new EditFormEvent(it).element;
+  const eventView = new EventView(it).element;
+  const editFormSubmitHandler = editForm.querySelector('form').addEventListener('submit',(evt)=> evt.preventDefault());
 
-const testPoints = generateNumPoints(TEST_POINT_COUNT);
+  const editFormSwitchHandler = editForm.querySelector('.event__rollup-btn').addEventListener('click',()=>contentList.replaceChild(eventView,editForm))
+  const eventViewHandler = eventView.querySelector('.event__rollup-btn').addEventListener('click',()=> contentList.replaceChild(editForm,eventView));
 
-for (let i = 0; i < testPoints.length; i++ ) {
-  if(i === 0) {
-    renderTemplate(contentList, createEditFormEventTemplate(generatePoint(i)));
-  }
-  else {
-    renderElement(contentList, new EventView(testPoints[i]).element);
-  }
-}
+  renderElement(contentList, eventView);
+});
+
