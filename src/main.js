@@ -4,6 +4,7 @@ import TripSortView from './view/trip-sort.js';
 import EditFormEvent from './view/event-edit.js';
 import TripInfoView from './view/trip-info.js';
 import EventListContainerView from './view/event-list-view.js';
+import EvenEmptyListContainerView from './view/event-list-empty.js';
 import EventView from './view/event-view.js';
 import {renderElement,RenderPosition} from './view/render.js';
 import {generateNumPoints} from './mock/event.js';
@@ -32,14 +33,38 @@ renderElement(sorting, new EventListContainerView().element);
 
 const contentList = document.querySelector('.trip-events__list');
 
+// let currentEvent = '';
+const escClickHandler = (evt,currentEvent) => {
+
+  if (evt.key  === 'Escape') {
+    console.log('elem->', currentEvent);
+    contentList.replaceChild(currentEvent['eventView'],currentEvent['editForm']);
+    document.removeEventListener('keydown',escClickHandler);
+  }
+};
+
+
 generateNumPoints(TEST_POINT_COUNT).map((it) => {
   const editForm = new EditFormEvent(it).element;
   const eventView = new EventView(it).element;
-  const editFormSubmitHandler = editForm.querySelector('form').addEventListener('submit',(evt)=> evt.preventDefault());
 
-  const editFormSwitchHandler = editForm.querySelector('.event__rollup-btn').addEventListener('click',()=>contentList.replaceChild(eventView,editForm))
-  const eventViewHandler = eventView.querySelector('.event__rollup-btn').addEventListener('click',()=> contentList.replaceChild(editForm,eventView));
+  editForm.querySelector('form').addEventListener('submit',(evt)=> {
+    evt.preventDefault();
+    contentList.replaceChild(eventView,editForm);
+    document.removeEventListener('keydown',escClickHandler);
+  });
+  editForm.querySelector('.event__rollup-btn').addEventListener('click',()=> {
+    contentList.replaceChild(eventView,editForm);
+    document.removeEventListener('keydown',escClickHandler);
+  });
+  eventView.querySelector('.event__rollup-btn').addEventListener('click',()=> {
+
+    contentList.replaceChild(editForm,eventView);
+    document.addEventListener('keydown',(event)=>escClickHandler(event,{editForm,eventView}));
+  });
 
   renderElement(contentList, eventView);
 });
 
+//Отрисовка пустого листа без точек
+//renderElement(contentList, new EvenEmptyListContainerView().element);
