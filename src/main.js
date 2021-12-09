@@ -1,11 +1,12 @@
-import {createTripFilterTemplate} from './view/trip-filters.js';
-import {createTripControlMenuTemplate} from './view/trip-controls.js';
-import {createTripSortTemplate} from './view/trip-sort.js';
-import {createEditFormEventTemplate} from './view/event-edit.js';
-import {createTripInfoTemplate} from './view/trip-info.js';
-import {createEventTemplate, createPintsContainer} from './view/event-view.js';
-import {renderTemplate,RenderPosition} from './view/render.js';
-import {generateNumPoints,generatePoint} from './mock/event.js';
+import TripFilterView from './view/trip-filters.js';
+import ControlMenuView from './view/trip-controls.js';
+import TripSortView from './view/trip-sort.js';
+import EditFormEvent from './view/event-edit.js';
+import TripInfoView from './view/trip-info.js';
+import EventListContainerView from './view/event-list-view.js';
+import EventView from './view/event-view.js';
+import {renderElement,RenderPosition} from './view/render.js';
+import {generateNumPoints} from './mock/event.js';
 
 const TEST_POINT_COUNT = 25;
 /*const EMPTY_DATA = {type: null,
@@ -22,25 +23,23 @@ const menu = document.querySelector('.trip-controls__navigation');
 const filter = document.querySelector('.trip-controls__filters');
 const sorting = document.querySelector('.trip-events');
 
-renderTemplate(tripContainer, createTripInfoTemplate(), RenderPosition.AFTERBEGIN);
-renderTemplate(menu, createTripControlMenuTemplate());
-renderTemplate(filter, createTripFilterTemplate());
-renderTemplate(sorting, createTripSortTemplate());
+renderElement(tripContainer, new TripInfoView().element, RenderPosition.AFTERBEGIN);
+renderElement(menu, new ControlMenuView().element);
+renderElement(filter, new TripFilterView().element);
+renderElement(sorting, new TripSortView().element);
 
-renderTemplate(sorting, createPintsContainer());
+renderElement(sorting, new EventListContainerView().element);
 
 const contentList = document.querySelector('.trip-events__list');
-// renderTemplate(contentList, createEditFormEventTemplate(generatePoint(1)));
-// renderTemplate(contentList, createEditFormEventTemplate(EMPTY_DATA));
 
+generateNumPoints(TEST_POINT_COUNT).map((it) => {
+  const editForm = new EditFormEvent(it).element;
+  const eventView = new EventView(it).element;
+  const editFormSubmitHandler = editForm.querySelector('form').addEventListener('submit',(evt)=> evt.preventDefault());
 
-const testPoints = generateNumPoints(TEST_POINT_COUNT);
+  const editFormSwitchHandler = editForm.querySelector('.event__rollup-btn').addEventListener('click',()=>contentList.replaceChild(eventView,editForm))
+  const eventViewHandler = eventView.querySelector('.event__rollup-btn').addEventListener('click',()=> contentList.replaceChild(editForm,eventView));
 
-for (let i = 0; i < testPoints.length; i++ ) {
-  if(i === 0) {
-    renderTemplate(contentList, createEditFormEventTemplate(generatePoint(i)));
-  }
-  else {
-    renderTemplate(contentList, createEventTemplate(testPoints[i]));
-  }
-}
+  renderElement(contentList, eventView);
+});
+

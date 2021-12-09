@@ -1,5 +1,6 @@
 import dayjs from 'dayjs';
 import {EVENT_TYPES} from '../mock/event.js';
+import {createElement} from "./render";
 
 const getDateFormat = (date,format) =>  date !== null ? dayjs(date).format(format) : '';
 
@@ -63,7 +64,7 @@ const createDescriptionSection = (destination) => (
     : ''
 );
 
-export const createEditFormEventTemplate = (event) => {
+const createEditFormEventTemplate = (event) => {
   const {dateStart, dateEnd, price, destination, offers,type} = event;
 
   return `<li class="trip-events__item">
@@ -125,3 +126,27 @@ export const createEditFormEventTemplate = (event) => {
     </form>
   </li>`;
 };
+
+export default class EditFormEvent {
+  #element = null;
+  #event = null;
+  constructor(event) {
+    this.#event = event;
+  }
+
+  get element() {
+    if (!this.#element) {
+      this.#element = createElement(this.template);
+    }
+
+    return this.#element;
+  }
+
+  get template() {
+    return createEditFormEventTemplate(this.#event);
+  }
+
+  clearElement() {
+    this.#element = null;
+  }
+}

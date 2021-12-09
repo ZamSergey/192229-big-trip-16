@@ -1,4 +1,5 @@
 import dayjs from 'dayjs';
+import {createElement} from './render';
 
 const getDateFormat = (date,format) =>  date !== null ? dayjs(date).format(format) : '';
 
@@ -20,7 +21,7 @@ const createOfferListTemplate = (offers) => {
   return offerList;
 };
 
-export const createEventTemplate = (event) => {
+const createEventTemplate = (event) => {
   const {dateStart, dateEnd, price, destination, offers,type} = event;
   const date1 = dayjs(dateStart);
   const date2 = dayjs(dateEnd);
@@ -61,4 +62,30 @@ export const createEventTemplate = (event) => {
     </div>
   </li>`;
 };
-export const createPintsContainer = () => ('<ul class="trip-events__list"></ul>');
+
+
+export default class EventView {
+  #element = null;
+  #event = null;
+
+  constructor(event) {
+    this.#event = event;
+  }
+
+  get element() {
+    if (!this.#element) {
+      this.#element = createElement(this.template);
+    }
+
+    return this.#element;
+  }
+
+
+  get template() {
+    return createEventTemplate(this.#event);
+  }
+
+  clearElement() {
+    this.#element = null;
+  }
+}
