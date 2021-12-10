@@ -9,7 +9,7 @@ import EventView from './view/event-view.js';
 import {renderElement,RenderPosition} from './view/render.js';
 import {generateNumPoints} from './mock/event.js';
 
-const TEST_POINT_COUNT = 25;
+const TEST_POINT_COUNT = 6;
 /*const EMPTY_DATA = {type: null,
   destination: null,
   offers: null,
@@ -33,38 +33,40 @@ renderElement(sorting, new EventListContainerView().element);
 
 const contentList = document.querySelector('.trip-events__list');
 
-// let currentEvent = '';
-const escClickHandler = (evt,currentEvent) => {
 
-  if (evt.key  === 'Escape') {
-    console.log('elem->', currentEvent);
-    contentList.replaceChild(currentEvent['eventView'],currentEvent['editForm']);
-    document.removeEventListener('keydown',escClickHandler);
-  }
-};
+if(TEST_POINT_COUNT > 0) {
+  generateNumPoints(TEST_POINT_COUNT).map((it) => {
+    const editForm = new EditFormEvent(it).element;
+    const eventView = new EventView(it).element;
+    const currentEvent = {editForm,eventView};
+    const escClickHandler = (evt) => {
 
+      if (evt.key  === 'Escape') {
+        contentList.replaceChild(currentEvent['eventView'],currentEvent['editForm']);
+        document.removeEventListener('keydown',escClickHandler);
+      }
+    };
 
-generateNumPoints(TEST_POINT_COUNT).map((it) => {
-  const editForm = new EditFormEvent(it).element;
-  const eventView = new EventView(it).element;
+    editForm.querySelector('form').addEventListener('submit',(evt)=> {
+      evt.preventDefault();
+      contentList.replaceChild(eventView,editForm);
+      document.removeEventListener('keydown',escClickHandler);
+    });
+    editForm.querySelector('.event__rollup-btn').addEventListener('click',()=> {
+      contentList.replaceChild(eventView,editForm);
+      document.removeEventListener('keydown',escClickHandler);
+    });
+    eventView.querySelector('.event__rollup-btn').addEventListener('click',()=> {
 
-  editForm.querySelector('form').addEventListener('submit',(evt)=> {
-    evt.preventDefault();
-    contentList.replaceChild(eventView,editForm);
-    document.removeEventListener('keydown',escClickHandler);
+      contentList.replaceChild(editForm,eventView);
+      document.addEventListener('keydown',escClickHandler);
+    });
+
+    renderElement(contentList, eventView);
   });
-  editForm.querySelector('.event__rollup-btn').addEventListener('click',()=> {
-    contentList.replaceChild(eventView,editForm);
-    document.removeEventListener('keydown',escClickHandler);
-  });
-  eventView.querySelector('.event__rollup-btn').addEventListener('click',()=> {
+}
+else {
+  renderElement(contentList, new EvenEmptyListContainerView().element);
 
-    contentList.replaceChild(editForm,eventView);
-    document.addEventListener('keydown',(event)=>escClickHandler(event,{editForm,eventView}));
-  });
+}
 
-  renderElement(contentList, eventView);
-});
-
-//Отрисовка пустого листа без точек
-//renderElement(contentList, new EvenEmptyListContainerView().element);
