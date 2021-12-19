@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import {EVENT_TYPES} from '../mock/event.js';
-import {createElement} from "./render";
+import AbstractView from './abstract-view.js';
 
 const getDateFormat = (date,format) =>  date !== null ? dayjs(date).format(format) : '';
 
@@ -127,26 +127,35 @@ const createEditFormEventTemplate = (event) => {
   </li>`;
 };
 
-export default class EditFormEvent {
-  #element = null;
+export default class EditFormEvent extends AbstractView {
   #event = null;
   constructor(event) {
+    super();
     this.#event = event;
-  }
-
-  get element() {
-    if (!this.#element) {
-      this.#element = createElement(this.template);
-    }
-
-    return this.#element;
   }
 
   get template() {
     return createEditFormEventTemplate(this.#event);
   }
 
-  clearElement() {
-    this.#element = null;
+  setFormSubmitHandler = (callback) => {
+    this._callback.formSubmit = callback;
+    this.element.querySelector('form').addEventListener('submit', this.#formSubmitHandler);
   }
+
+  #formSubmitHandler = (evt) => {
+    evt.preventDefault();
+    this._callback.formSubmit();
+  }
+
+  setRollupBtntHandler = (callback) => {
+    this._callback.rollupClick = callback;
+    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#rollupBtnHandler);
+  }
+
+  #rollupBtnHandler = (evt) => {
+    evt.preventDefault();
+    this._callback.rollupClick();
+  }
+
 }

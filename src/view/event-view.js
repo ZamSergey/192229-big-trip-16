@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import {createElement} from './render';
+import AbstractView from './abstract-view.js';
 
 const getDateFormat = (date,format) =>  date !== null ? dayjs(date).format(format) : '';
 
@@ -64,28 +64,25 @@ const createEventTemplate = (event) => {
 };
 
 
-export default class EventView {
-  #element = null;
+export default class EventView extends  AbstractView {
   #event = null;
 
   constructor(event) {
+    super();
     this.#event = event;
   }
-
-  get element() {
-    if (!this.#element) {
-      this.#element = createElement(this.template);
-    }
-
-    return this.#element;
-  }
-
 
   get template() {
     return createEventTemplate(this.#event);
   }
 
-  clearElement() {
-    this.#element = null;
+  setRollupBtnHandler = (callback) => {
+    this._callback.rollupClick = callback;
+    this.element.querySelector('.event__rollup-btn').addEventListener('click',this.#rollupBtnHandler);
+  }
+
+  #rollupBtnHandler = (evt) => {
+    evt.preventDefault();
+    this._callback.rollupClick();
   }
 }
