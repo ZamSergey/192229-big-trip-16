@@ -36,33 +36,34 @@ const renderEvent = (eventListElement, event) => {
 
   const replaceFormToEvent = () => {
     contentList.replaceChild(eventView.element,editForm.element);
+    // eslint-disable-next-line no-use-before-define
+    document.removeEventListener('keydown',escClickHandler);
   };
 
   const replaceEventToForm = () => {
     contentList.replaceChild(editForm.element,eventView.element);
+    // eslint-disable-next-line no-use-before-define
+    document.addEventListener('keydown',escClickHandler);
   };
 
   const escClickHandler = (evt) => {
     if (evt.key === 'Escape' || evt.key === 'Esc') {
       evt.preventDefault();
       replaceFormToEvent();
-      document.removeEventListener('keydown',escClickHandler);
     }
   };
 
-  editForm.element.querySelector('form').addEventListener('submit',(evt)=> {
+  editForm.setFormSubmitHandler((evt)=> {
     evt.preventDefault();
     replaceFormToEvent();
-    document.removeEventListener('keydown',escClickHandler);
   });
-  editForm.element.querySelector('.event__rollup-btn').addEventListener('click',()=> {
-    replaceFormToEvent();
-    document.removeEventListener('keydown',escClickHandler);
-  });
-  eventView.element.querySelector('.event__rollup-btn').addEventListener('click',()=> {
 
+  editForm.setRollupBtntHandler(()=> {
+    replaceFormToEvent();
+  });
+
+  eventView.setRollupBtnHandler(()=> {
     replaceEventToForm();
-    document.addEventListener('keydown',escClickHandler);
   });
 
   renderElement(eventListElement, eventView.element);
