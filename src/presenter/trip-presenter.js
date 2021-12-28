@@ -1,21 +1,57 @@
-import TripFilterView from './view/trip-filters.js';
-import ControlMenuView from './view/trip-controls.js';
-import TripSortView from './view/trip-sort.js';
-import EditFormEvent from './view/event-edit.js';
-import TripInfoView from './view/trip-info.js';
-import EventListContainerView from './view/event-list-view.js';
-import EvenEmptyListContainerView from './view/event-list-empty.js';
-import EventView from './view/event-view.js';
+import EvenEmptyListContainerView from '../view/event-list-empty.js';
 import {renderElement,RenderPosition,replace} from '../utils/render.js';
-import {generateNumPoints} from './mock/event.js';
+import TripEventsSortView from '../view/trip-sort.js';
+import EventsContainerView from '../view/event-list-view.js';
+import PointPresenter from './point-presenter.js';
+
+const TEST_POINT_COUNT = 6;
 
 export default class TripPresenter {
   #tripContainer = null;
 
-  #menuComponent = new ControlMenuView();
-  #filterComponent = new TripFilterView();
-  #sortingComponent = new EventListContainerView();
+  #tripEventsSortComponent = new TripEventsSortView();
+  #eventsContainerComponent = new EventsContainerView();
+  #eventEmptyListComponent = new EvenEmptyListContainerView();
 
+  constructor(tripContainer) {
+    this.#tripContainer = tripContainer;
+  }
+
+  #tripEvents = [];
+
+  init = (tripEvents) => {
+    this.#tripEvents = [...tripEvents];
+
+    renderElement(this.#tripContainer, this.#tripEventsSortComponent);
+    renderElement(this.#tripContainer,  this.#eventsContainerComponent);
+
+    this.#renderTripEvents(this.#tripEvents);
+  }
+
+  #renderSort = () => {
+    // Метод для рендеринга сортировки
+  }
+
+  #renderEvent = (event) => {
+    new PointPresenter(this.#eventsContainerComponent).init(event);
+  }
+
+  #renderEvents = (events) => {
+    events.map((it) => this.#renderEvent(it));
+  }
+
+  #renderNoEvents = () => {
+    renderElement(this.#tripContainer, this.#eventEmptyListComponent);
+  }
+
+  #renderTripEvents = (events) => {
+    if(TEST_POINT_COUNT > 0) {
+      this.#renderEvents(events);
+    }
+    else {
+      this.#renderNoEvents();
+    }
+  }
 
 }
 
