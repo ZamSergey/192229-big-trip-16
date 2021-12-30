@@ -1,5 +1,5 @@
 import EvenEmptyListContainerView from '../view/event-list-empty.js';
-import {renderElement,RenderPosition,replace} from '../utils/render.js';
+import {renderElement} from '../utils/render.js';
 import TripEventsSortView from '../view/trip-sort.js';
 import EventsContainerView from '../view/event-list-view.js';
 import PointPresenter from './point-presenter.js';
@@ -13,8 +13,16 @@ export default class TripPresenter {
   #eventsContainerComponent = new EventsContainerView();
   #eventEmptyListComponent = new EvenEmptyListContainerView();
 
+  #pointPresenter = new Map();
+
+
   constructor(tripContainer) {
     this.#tripContainer = tripContainer;
+  }
+  //Для отладки нужен, потом убрать
+
+  get pointPresenter() {
+    return this.#pointPresenter;
   }
 
   #tripEvents = [];
@@ -26,6 +34,7 @@ export default class TripPresenter {
     renderElement(this.#tripContainer,  this.#eventsContainerComponent);
 
     this.#renderTripEvents(this.#tripEvents);
+    console.log(this.pointPresenter);
   }
 
   #renderSort = () => {
@@ -33,7 +42,9 @@ export default class TripPresenter {
   }
 
   #renderEvent = (event) => {
-    new PointPresenter(this.#eventsContainerComponent).init(event);
+    const point = new PointPresenter(this.#eventsContainerComponent);
+    point.init(event)
+    this.#pointPresenter.set(event.id, point);
   }
 
   #renderEvents = (events) => {

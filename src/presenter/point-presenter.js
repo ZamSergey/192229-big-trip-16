@@ -16,48 +16,58 @@ export default class PointPresenter {
 
   init = (event) => {
     this.#event = event;
+
+    this.#eventViewComponent = new EventView(event);
+    this.#editFormComponent = new EditFormEvent(event);
+
+    this.#editFormComponent.setFormSubmitHandler(()=> {
+      this.#replaceFormToEvent();
+    });
+
+    this.#editFormComponent.setRollupBtnHandler(()=> {
+      this.#replaceFormToEvent();
+    });
+
+    this.#eventViewComponent.setRollupBtnHandler(()=> {
+      this.#replaceEventToForm();
+    });
+
+    this.#eventViewComponent.setFavoriteHandler(()=> {
+      this.#changeFavoriteBtnHandler();
+    });
+
     this.#renderEvent();
   }
 
   //Какой функционал нужно ставить в инициализацию?
   //Где лучше хранить параметры для инициализации?
 
-  #renderEvent = () => {
-    const eventView = new EventView(this.#event);
-    const editForm = new EditFormEvent(this.#event);
+   #replaceFormToEvent = () => {
+     replace(this.#eventViewComponent, this.#editFormComponent);
+     // eslint-disable-next-line no-use-before-define
+     document.removeEventListener('keydown',this.#escClickHandler);
+   };
 
-    const replaceFormToEvent = () => {
-      replace(eventView,editForm);
-      // eslint-disable-next-line no-use-before-define
-      document.removeEventListener('keydown',escClickHandler);
-    };
+  #replaceEventToForm = () => {
+    replace( this.#editFormComponent,this.#eventViewComponent);
+    // eslint-disable-next-line no-use-before-define
+    document.addEventListener('keydown',this.#escClickHandler);
+  };
 
-    const replaceEventToForm = () => {
-      replace(editForm,eventView);
-      // eslint-disable-next-line no-use-before-define
-      document.addEventListener('keydown',escClickHandler);
-    };
-
-    const escClickHandler = (evt) => {
-      if (evt.key === 'Escape' || evt.key === 'Esc') {
-        evt.preventDefault();
-        replaceFormToEvent();
-      }
-    };
-
-    editForm.setFormSubmitHandler((evt)=> {
+  #escClickHandler = (evt) => {
+    if (evt.key === 'Escape' || evt.key === 'Esc') {
       evt.preventDefault();
-      replaceFormToEvent();
-    });
+      this.#replaceFormToEvent();
+    }
+  };
 
-    editForm.setRollupBtnHandler(()=> {
-      replaceFormToEvent();
-    });
+  #changeFavoriteBtnHandler = () => {
+    this.#eventViewComponent.element.querySelector('.event__favorite-btn').classList.toggle('event__favorite-btn--active');
+    console.log(this.#eventViewComponent.#event);
 
-    eventView.setRollupBtnHandler(()=> {
-      replaceEventToForm();
-    });
+  };
 
-    renderElement(this.#pointContainer, eventView);
+  #renderEvent = () => {
+    renderElement(this.#pointContainer, this.#eventViewComponent);
   };
 }
