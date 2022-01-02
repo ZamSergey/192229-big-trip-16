@@ -1,5 +1,5 @@
 import EvenEmptyListContainerView from '../view/event-list-empty.js';
-import {renderElement} from '../utils/render.js';
+import {renderElement,replace,createElement} from '../utils/render.js';
 import TripEventsSortView from '../view/trip-sort.js';
 import EventsContainerView from '../view/event-list-view.js';
 import PointPresenter from './point-presenter.js';
@@ -41,8 +41,28 @@ export default class TripPresenter {
     // Метод для рендеринга сортировки
   }
 
+  #updateData = (data) => {
+    // console.log('Пришло в updateData ',data);
+    // Обновляю данные для изменившегося события(точки)
+    this.#tripEvents.find((element,index,array)=>{
+      if (element.id === data.id) {
+        // console.log('Было в данных ',element);
+        array[index] = data;
+      }
+    });
+    //Вызываю обновление измененного элемента
+    const newPoint = this.#pointPresenter.get(data.id);
+    newPoint.update(data);
+    // Добавляю его коллекцию
+    this.#pointPresenter.set(data.id, newPoint);
+    // const newEvent = createElement(data);
+    // const oldEvent = this.#pointPresenter.get(data.id);
+    // this.#pointPresenter.delete(data.id);
+    // replace(newEvent,oldEvent);
+  };
+
   #renderEvent = (event) => {
-    const point = new PointPresenter(this.#eventsContainerComponent);
+    const point = new PointPresenter(this.#eventsContainerComponent, this.#updateData );
     point.init(event)
     this.#pointPresenter.set(event.id, point);
   }
