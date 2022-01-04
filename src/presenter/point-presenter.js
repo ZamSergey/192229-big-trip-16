@@ -9,15 +9,24 @@ export default class PointPresenter {
   #eventViewComponent = null;
   #editFormComponent = null;
   #updateDataHandler = null;
+  #resetFormView = null;
+  #isDefaultView = false;
 
   #event = null;
-  constructor(pointContainer, updateDataHandler) {
+
+  get isDefaultView() {
+    return this.#isDefaultView;
+  }
+
+  constructor(pointContainer, updateDataHandler, resetFormView) {
     this.#pointContainer = pointContainer;
     this.#updateDataHandler = updateDataHandler;
+    this.#resetFormView = resetFormView;
   }
 
   init = (event) => {
     this.#event = event;
+    this.#isDefaultView = true;
 
     this.#eventViewComponent = new EventView(event);
     this.#editFormComponent = new EditFormEvent(event);
@@ -42,9 +51,8 @@ export default class PointPresenter {
   }
 
   update = (newEvent) => {
-    console.log('newEvent',newEvent);
     const newPoint =  new EventView(newEvent);
-    replace(newPoint, this.#editFormComponent);
+    replace(newPoint, this.#eventViewComponent);
     //Удаляю старый элемент
     this.#eventViewComponent.removeElement();
     //Добавляю новый
@@ -53,25 +61,28 @@ export default class PointPresenter {
     this.#eventViewComponent.setRollupBtnHandler(()=> {
       this.#replaceEventToForm();
     });
-
     this.#eventViewComponent.setFavoriteHandler(()=> {
       this.#changeFavoriteBtnHandler();
     });
-
-
   }
 
+  resetViewToDefault = () => {
+    this.#replaceFormToEvent();
+  };
   //Какой функционал нужно ставить в инициализацию?
   //Где лучше хранить параметры для инициализации?
 
    #replaceFormToEvent = () => {
      replace(this.#eventViewComponent, this.#editFormComponent);
+     this.#isDefaultView = true;
      // eslint-disable-next-line no-use-before-define
      document.removeEventListener('keydown',this.#escClickHandler);
    };
 
   #replaceEventToForm = () => {
+    this.#resetFormView();
     replace( this.#editFormComponent,this.#eventViewComponent);
+    this.#isDefaultView = false;
     // eslint-disable-next-line no-use-before-define
     document.addEventListener('keydown',this.#escClickHandler);
   };
@@ -80,16 +91,15 @@ export default class PointPresenter {
     if (evt.key === 'Escape' || evt.key === 'Esc') {
       evt.preventDefault();
       this.#replaceFormToEvent();
+      this.#isDefaultView = true;
     }
   };
 
   #changeFavoriteBtnHandler = () => {
-    //this.#eventViewComponent.element.querySelector('.event__favorite-btn').classList.toggle('event__favorite-btn--active');
-    //console.log(this.#eventViewComponent.#event);
     //Меняем значение ifFavorite и отправлем изменения в trip-presenter
-    console.log('Было в точке где кликнули', this.#event);
+
     this.#event = Object.assign({}, this.#event, {isFavorite: !this.#event.isFavorite});
-    console.log('Новый объект', this.#event);
+
     this.#updateDataHandler(this.#event);
   };
 

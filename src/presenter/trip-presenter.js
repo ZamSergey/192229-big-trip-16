@@ -1,5 +1,5 @@
 import EvenEmptyListContainerView from '../view/event-list-empty.js';
-import {renderElement,replace,createElement} from '../utils/render.js';
+import {renderElement} from '../utils/render.js';
 import TripEventsSortView from '../view/trip-sort.js';
 import EventsContainerView from '../view/event-list-view.js';
 import PointPresenter from './point-presenter.js';
@@ -14,7 +14,7 @@ export default class TripPresenter {
   #eventEmptyListComponent = new EvenEmptyListContainerView();
 
   #pointPresenter = new Map();
-
+  #currentOpenFormId = null;
 
   constructor(tripContainer) {
     this.#tripContainer = tripContainer;
@@ -34,7 +34,6 @@ export default class TripPresenter {
     renderElement(this.#tripContainer,  this.#eventsContainerComponent);
 
     this.#renderTripEvents(this.#tripEvents);
-    console.log(this.pointPresenter);
   }
 
   #renderSort = () => {
@@ -44,25 +43,20 @@ export default class TripPresenter {
   #updateData = (data) => {
     // console.log('Пришло в updateData ',data);
     // Обновляю данные для изменившегося события(точки)
-    this.#tripEvents.find((element,index,array)=>{
-      if (element.id === data.id) {
-        // console.log('Было в данных ',element);
-        array[index] = data;
-      }
-    });
+    const index = this.#tripEvents.findIndex((it) => it.id === data.id);
+    if (index < 0) {
+      return;
+    }
+
+    this.#tripEvents[index] = data;
     //Вызываю обновление измененного элемента
     const newPoint = this.#pointPresenter.get(data.id);
     newPoint.update(data);
-    // Добавляю его коллекцию
-    this.#pointPresenter.set(data.id, newPoint);
-    // const newEvent = createElement(data);
-    // const oldEvent = this.#pointPresenter.get(data.id);
-    // this.#pointPresenter.delete(data.id);
-    // replace(newEvent,oldEvent);
+
   };
 
   #renderEvent = (event) => {
-    const point = new PointPresenter(this.#eventsContainerComponent, this.#updateData );
+    const point = new PointPresenter(this.#eventsContainerComponent, this.#updateData, this.#resetFormView );
     point.init(event)
     this.#pointPresenter.set(event.id, point);
   }
@@ -82,6 +76,16 @@ export default class TripPresenter {
     else {
       this.#renderNoEvents();
     }
+  }
+
+  #resetFormView = () => {
+
+    this.#pointPresenter.forEach((it,key) => {
+      // console.log('it,key',it.isDefaultView,key);
+      if(!it.isDefaultView) {
+        this.#pointPresenter.get(key).resetViewToDefault();
+      }
+    });
   }
 
 }
