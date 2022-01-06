@@ -126,7 +126,7 @@ const generatePoint = (id) => {
     destination: generateDestination(),
     offers: generateOffers(typeEvent),
     id: id,
-    is_favorite: Boolean(getRandomInteger(0, 1)),
+    isFavorite: Boolean(getRandomInteger(0, 1)),
     dateStart: dateStart,
     dateEnd: dateEnd,
     price: getRandomInteger(1, 1000)
