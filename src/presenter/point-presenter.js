@@ -67,6 +67,9 @@ export default class PointPresenter {
   }
 
   resetViewToDefault = () => {
+    if(this.#isDefaultView) {
+      return;
+    }
     this.#replaceFormToEvent();
   };
   //Какой функционал нужно ставить в инициализацию?
