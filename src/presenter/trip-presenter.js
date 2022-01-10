@@ -1,8 +1,10 @@
 import EvenEmptyListContainerView from '../view/event-list-empty.js';
-import {renderElement} from '../utils/render.js';
+import {renderElement,remove} from '../utils/render.js';
 import TripEventsSortView from '../view/trip-sort.js';
 import EventsContainerView from '../view/event-list-view.js';
 import PointPresenter from './point-presenter.js';
+import {SortType} from '../utils/const.js';
+import {sortByTime,sortByPrice} from '../utils/event.js';
 
 const TEST_POINT_COUNT = 6;
 
@@ -12,6 +14,10 @@ export default class TripPresenter {
   #tripEventsSortComponent = new TripEventsSortView();
   #eventsContainerComponent = new EventsContainerView();
   #eventEmptyListComponent = new EvenEmptyListContainerView();
+
+  #currentSort = SortType.DEFAULT;
+  #sourcedTripEvents = [];
+  #tripEvents = [];
 
   #pointPresenter = new Map();
   #currentOpenFormId = null;
@@ -25,20 +31,18 @@ export default class TripPresenter {
     return this.#pointPresenter;
   }
 
-  #tripEvents = [];
-
   init = (tripEvents) => {
     this.#tripEvents = [...tripEvents];
+    this.#sourcedTripEvents = [...tripEvents];
 
     renderElement(this.#tripContainer, this.#tripEventsSortComponent);
+    this.#tripEventsSortComponent.setSortChangeHandler(this.#handleSortChange);
     renderElement(this.#tripContainer,  this.#eventsContainerComponent);
 
     this.#renderTripEvents(this.#tripEvents);
   }
 
-  #renderSort = () => {
-    // Метод для рендеринга сортировки
-  }
+
 
   #updateData = (data) => {
     // console.log('Пришло в updateData ',data);
@@ -55,9 +59,52 @@ export default class TripPresenter {
 
   };
 
+  #handleSortChange = (sortType) => {
+    // - Сортируем задачи
+    if (this.#currentSort === sortType) {
+      return;
+    }
+    this.#sortTasks(sortType);
+    // - Очищаем список
+    //remove(this.#eventsContainerComponent);
+    this.#clearEventList();
+    // - Рендерим список заново
+    this.#renderSort();
+  }
+
+  #clearEventList = () => {
+    this.#pointPresenter.forEach((presenter) => presenter.destroy());
+    remove(this.#eventsContainerComponent);
+  }
+  #renderSort = () => {
+    // Метод для рендеринга сортировки
+    renderElement(this.#tripContainer,  this.#eventsContainerComponent);
+    this.#renderTripEvents(this.#tripEvents);
+  }
+
+  #sortTasks = (sortType) => {
+    // 2. Этот исходный массив задач необходим,
+    // потому что для сортировки мы будем мутировать
+    // массив в свойстве _boardTasks
+    switch (sortType) {
+      case SortType.TIME:
+        this.#tripEvents.sort(sortByTime);
+        break;
+      case SortType.PRICE:
+        this.#tripEvents.sort(sortByPrice);
+        break;
+      default:
+        // 3. А когда пользователь захочет "вернуть всё, как было",
+        // мы просто запишем в _boardTasks исходный массив
+        this.#tripEvents = [...this.#sourcedTripEvents];
+    }
+
+    this.#currentSort = sortType;
+  }
+
   #renderEvent = (event) => {
     const point = new PointPresenter(this.#eventsContainerComponent, this.#updateData, this.#resetFormView );
-    point.init(event)
+    point.init(event);
     this.#pointPresenter.set(event.id, point);
   }
 
@@ -79,12 +126,8 @@ export default class TripPresenter {
   }
 
   #resetFormView = () => {
-
     this.#pointPresenter.forEach((it,key) => {
-      // console.log('it,key',it.isDefaultView,key);
-      if(!it.isDefaultView) {
-        this.#pointPresenter.get(key).resetViewToDefault();
-      }
+      this.#pointPresenter.get(key).resetViewToDefault();
     });
   }
 

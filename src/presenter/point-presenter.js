@@ -1,6 +1,6 @@
 import EditFormEvent from '../view/event-edit.js';
 import EventView from '../view/event-view.js';
-import {renderElement, replace} from '../utils/render.js';
+import {renderElement, replace, remove} from '../utils/render.js';
 
 
 export default class PointPresenter {
@@ -67,6 +67,9 @@ export default class PointPresenter {
   }
 
   resetViewToDefault = () => {
+    if(this.#isDefaultView) {
+      return;
+    }
     this.#replaceFormToEvent();
   };
   //Какой функционал нужно ставить в инициализацию?
@@ -106,4 +109,9 @@ export default class PointPresenter {
   #renderEvent = () => {
     renderElement(this.#pointContainer, this.#eventViewComponent);
   };
+
+  destroy = () => {
+    remove(this.#editFormComponent);
+    remove(this.#eventViewComponent);
+  }
 }
