@@ -17,7 +17,6 @@ const getWeightForNullDate = (dateA, dateB) => {
 };
 
 export const sortByTime = (eventA, eventB) => {
-  console.log('Sort function', eventA,eventB);
   const weight = getWeightForNullDate(eventA.dateStart, eventB.dateStart);
 
   return weight ?? dayjs(eventA.dateStart).diff(dayjs(eventB.dateStart));
@@ -31,7 +30,5 @@ export const sortTaskDown = (eventA, taskB) => {
 };
 */
 
-export const sortByPrice = (eventA, eventB) => {
-  console.log('sort function', eventA, eventB);
-  return eventB.price - eventA.price;
-}
+export const sortByPrice = (eventA, eventB) => eventB.price - eventA.price;
+

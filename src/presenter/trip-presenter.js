@@ -44,6 +44,8 @@ export default class TripPresenter {
 
   #renderSort = () => {
     // Метод для рендеринга сортировки
+    renderElement(this.#tripContainer,  this.#eventsContainerComponent);
+    this.#renderTripEvents(this.#tripEvents);
   }
 
   #updateData = (data) => {
@@ -62,32 +64,32 @@ export default class TripPresenter {
   };
 
   #handleSortChange = (sortType) => {
-    console.log('trip-presenter  handlerSortChange ->', sortType);
     // - Сортируем задачи
     if (this.#currentSort === sortType) {
       return;
     }
     this.#sortTasks(sortType);
-    console.log('currentSort',this.#currentSort)
     // - Очищаем список
-    remove(this.#eventsContainerComponent);
+    //remove(this.#eventsContainerComponent);
+    this.#clearEventList();
     // - Рендерим список заново
-    renderElement(this.#tripContainer,  this.#eventsContainerComponent);
-    this.#renderTripEvents(this.#tripEvents);
+    this.#renderSort();
+  }
+
+  #clearEventList = () => {
+    this.#pointPresenter.forEach((presenter) => presenter.destroy());
+    this.#eventsContainerComponent.removeElement();
   }
 
   #sortTasks = (sortType) => {
     // 2. Этот исходный массив задач необходим,
     // потому что для сортировки мы будем мутировать
     // массив в свойстве _boardTasks
-    console.log('trip-presenter sortTask ->', sortType);
     switch (sortType) {
       case SortType.TIME:
-        console.log('sortTask Time');
         this.#tripEvents.sort(sortByTime);
         break;
       case SortType.PRICE:
-        console.log('sortTask Price');
         this.#tripEvents.sort(sortByPrice);
         break;
       default:

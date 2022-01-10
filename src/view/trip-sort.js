@@ -36,7 +36,6 @@ export default class TripSortView extends AbstractView{
   }
 
   setSortChangeHandler = (callback) => {
-    console.log('SetSortChangeHandler');
     this._callback.sortChange = callback;
     this.element.addEventListener('click', this.#sortChangeHandler);
   }
@@ -48,7 +47,6 @@ export default class TripSortView extends AbstractView{
     }
     if (evt.target.dataset.sortBy) {
       this._callback.sortChange(evt.target.dataset.sortBy);
-      console.log(evt.target.dataset.sortBy);
     }
   }
 }
