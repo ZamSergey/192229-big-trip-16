@@ -42,11 +42,7 @@ export default class TripPresenter {
     this.#renderTripEvents(this.#tripEvents);
   }
 
-  #renderSort = () => {
-    // Метод для рендеринга сортировки
-    renderElement(this.#tripContainer,  this.#eventsContainerComponent);
-    this.#renderTripEvents(this.#tripEvents);
-  }
+
 
   #updateData = (data) => {
     // console.log('Пришло в updateData ',data);
@@ -78,7 +74,12 @@ export default class TripPresenter {
 
   #clearEventList = () => {
     this.#pointPresenter.forEach((presenter) => presenter.destroy());
-    this.#eventsContainerComponent.removeElement();
+    remove(this.#eventsContainerComponent);
+  }
+  #renderSort = () => {
+    // Метод для рендеринга сортировки
+    renderElement(this.#tripContainer,  this.#eventsContainerComponent);
+    this.#renderTripEvents(this.#tripEvents);
   }
 
   #sortTasks = (sortType) => {
