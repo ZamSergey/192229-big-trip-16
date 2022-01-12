@@ -42,8 +42,6 @@ export default class TripPresenter {
     this.#renderTripEvents(this.#tripEvents);
   }
 
-
-
   #updateData = (data) => {
     // console.log('Пришло в updateData ',data);
     // Обновляю данные для изменившегося события(точки)
@@ -76,6 +74,7 @@ export default class TripPresenter {
     this.#pointPresenter.forEach((presenter) => presenter.destroy());
     remove(this.#eventsContainerComponent);
   }
+
   #renderSort = () => {
     // Метод для рендеринга сортировки
     renderElement(this.#tripContainer,  this.#eventsContainerComponent);

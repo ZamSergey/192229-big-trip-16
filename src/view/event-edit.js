@@ -1,18 +1,22 @@
 import dayjs from 'dayjs';
 import {EVENT_TYPES} from '../mock/event.js';
-import AbstractView from './abstract-view.js';
+import SmartView from './smart-view.js';
 
 const getDateFormat = (date,format) =>  date !== null ? dayjs(date).format(format) : '';
 
-const createEventType = (event,number) => {
+const createEventType = (event,number,isChecked) => {
+  console.log('isChecked',isChecked);
   const eventLow = event.toLowerCase();
   return `<div class="event__type-item">
-    <input id="event-type-${eventLow}-${number}" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${eventLow}">
+    <input id="event-type-${eventLow}-${number}" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${eventLow}" ${isChecked ? 'checked':''}>
     <label class="event__type-label  event__type-label--${eventLow}" for="event-type-${eventLow}-${number}">${event}</label>
   </div>`;
 };
 
-const createEventList = (events) => events.map((it, i) => createEventType(it, i)).join('');
+const createEventList = (events,checkedType) => events.map((it, i) => {
+  const isChecked = checkedType === it;
+  return createEventType(it, i, isChecked);
+}).join('');
 
 const createOffer = (offer) => {
   const {checked,title,price,id} = offer;
@@ -64,30 +68,31 @@ const createDescriptionSection = (destination) => (
     : ''
 );
 
-const createEditFormEventTemplate = (event) => {
-  const {dateStart, dateEnd, price, destination, offers,type} = event;
+const createEditFormEventTemplate = (data) => {
+  const {dateStart, dateEnd, price, destination, offers,currentType} = data;
 
+  console.log('currentType.toLowerCase()',currentType)
   return `<li class="trip-events__item">
     <form class="event event--edit" action="#" method="post">
       <header class="event__header">
         <div class="event__type-wrapper">
           <label class="event__type  event__type-btn" for="event-type-toggle-1">
             <span class="visually-hidden">Choose event type</span>
-            <img class="event__type-icon" width="17" height="17" src="img/icons/${type.toLowerCase()}.png" alt="Event type icon">
+            <img class="event__type-icon" width="17" height="17" src="img/icons/${currentType.toLowerCase()}.png" alt="Event type icon">
           </label>
           <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox">
 
           <div class="event__type-list">
             <fieldset class="event__type-group">
               <legend class="visually-hidden">Event type</legend>
-              ${createEventList(EVENT_TYPES)}
+              ${createEventList(EVENT_TYPES,currentType)}
             </fieldset>
           </div>
         </div>
 
         <div class="event__field-group  event__field-group--destination">
           <label class="event__label  event__type-output" for="event-destination-1">
-            ${type}
+            ${currentType}
           </label>
           <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination !== null ? destination.name : ''}" list="destination-list-1">
           <datalist id="destination-list-1">
@@ -127,20 +132,86 @@ const createEditFormEventTemplate = (event) => {
   </li>`;
 };
 
-export default class EditFormEvent extends AbstractView {
+export default class EditFormEvent extends SmartView {
   #event = null;
+
   constructor(event) {
     super();
-    this.#event = event;
+    // this.#event = event;
+    this._data = EditFormEvent.parseEventToData(event);
+    console.log('this._data',this._data);
+
+    this.#setInnerHandlers();
+
   }
 
+  #changeEventTypeHandler = (evt) => {
+    evt.preventDefault();
+
+    if(evt.target.classList.contains('event__type-input')) {
+      console.log('changeEventTypeHandler before',this._data.currentType)
+      console.log('changeEventTypeHandler',this._data.currentType)
+      this.updateData({
+        currentType: this._data.currentType,
+      });
+    }
+  }
+
+
   get template() {
-    return createEditFormEventTemplate(this.#event);
+    // return createEditFormEventTemplate(this.#event);
+    return createEditFormEventTemplate(this._data);
+  }
+
+  updateElement = () => {
+    const prevElement = this.element;
+    const parent = prevElement.parentElement;
+    this.removeElement();
+
+    const newElement = this.element;
+
+    parent.replaceChild(newElement, prevElement);
+    this.restoreHandlers();
+  }
+
+  restoreHandlers = () => {
+    this.#setInnerHandlers();
+    this.setFormSubmitHandler(this._callback.formSubmit);
+  }
+
+  #setInnerHandlers = () => {
+    this.element.querySelector('.event__type-group')
+      .addEventListener('change', this.#changeEventTypeHandler);
+  }
+
+  updateData = (update,justDataUpdating) => {
+    if (!update) {
+      return;
+    }
+
+    this._data = {...this._data, ...update};
+    if (justDataUpdating) {
+      return;
+    }
+
+    this.updateElement();
   }
 
   setFormSubmitHandler = (callback) => {
     this._callback.formSubmit = callback;
     this.element.querySelector('form').addEventListener('submit', this.#formSubmitHandler);
+    this._callback.formSubmit(EditFormEvent.parseDataToEvent(this._data));
+  }
+
+  static parseEventToData = (event) => ({...event,
+    currentType: event.type
+  });
+
+  static parseDataToEvent = (data) => {
+    const event = {...data};
+    event.type = data.currentType;
+    delete event.currentType;
+    return event;
   }
 
   #formSubmitHandler = (evt) => {
