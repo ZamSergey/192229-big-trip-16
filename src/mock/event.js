@@ -142,4 +142,17 @@ const generateNumPoints = (number) => {
   return data;
 };
 
-export {generateNumPoints,generatePoint,EVENT_TYPES};
+const generateNumDestination = (number) => {
+  const data = [];
+  for(let i = 0; i < number; i++){
+    data.push(generateDestination());
+  }
+  return data;
+};
+const generateAllOffers = () => {
+  const data = [];
+  EVENT_TYPES.map((it) => data.push(generateOffers(it)))
+  return data;
+};
+
+export {generateNumPoints, generatePoint, generateNumDestination, generateAllOffers, generateDestination, EVENT_TYPES};

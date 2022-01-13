@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import {EVENT_TYPES} from '../mock/event.js';
+import {EVENT_TYPES,generateAllOffers} from '../mock/event.js';
 import SmartView from './smart-view.js';
 
 const getDateFormat = (date,format) =>  date !== null ? dayjs(date).format(format) : '';
@@ -71,7 +71,6 @@ const createDescriptionSection = (destination) => (
 const createEditFormEventTemplate = (data) => {
   const {dateStart, dateEnd, price, destination, offers,currentType} = data;
 
-  console.log('currentType.toLowerCase()',currentType)
   return `<li class="trip-events__item">
     <form class="event event--edit" action="#" method="post">
       <header class="event__header">
@@ -139,7 +138,6 @@ export default class EditFormEvent extends SmartView {
     super();
     // this.#event = event;
     this._data = EditFormEvent.parseEventToData(event);
-    console.log('this._data',this._data);
 
     this.#setInnerHandlers();
 
@@ -148,15 +146,14 @@ export default class EditFormEvent extends SmartView {
   #changeEventTypeHandler = (evt) => {
     evt.preventDefault();
 
+    const newType = this.element.querySelector('.event__type-input:checked').value;
+
     if(evt.target.classList.contains('event__type-input')) {
-      console.log('changeEventTypeHandler before',this._data.currentType)
-      console.log('changeEventTypeHandler',this._data.currentType)
       this.updateData({
-        currentType: this._data.currentType,
+        currentType: newType,
       });
     }
   }
-
 
   get template() {
     // return createEditFormEventTemplate(this.#event);
@@ -173,6 +170,7 @@ export default class EditFormEvent extends SmartView {
     parent.replaceChild(newElement, prevElement);
     this.restoreHandlers();
   }
+  //востанавливаем работу обработчиков
 
   restoreHandlers = () => {
     this.#setInnerHandlers();
@@ -180,8 +178,8 @@ export default class EditFormEvent extends SmartView {
   }
 
   #setInnerHandlers = () => {
-    this.element.querySelector('.event__type-group')
-      .addEventListener('change', this.#changeEventTypeHandler);
+    this.element.querySelector('.event__type-group').addEventListener('change', this.#changeEventTypeHandler);
+    //Пропадает обработчик сворачиивания формы редактирования
   }
 
   updateData = (update,justDataUpdating) => {
@@ -200,11 +198,12 @@ export default class EditFormEvent extends SmartView {
   setFormSubmitHandler = (callback) => {
     this._callback.formSubmit = callback;
     this.element.querySelector('form').addEventListener('submit', this.#formSubmitHandler);
-    this._callback.formSubmit(EditFormEvent.parseDataToEvent(this._data));
+    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#rollupBtnHandler);
   }
 
   static parseEventToData = (event) => ({...event,
-    currentType: event.type
+    currentType: event.type,
+    offersData: generateAllOffers()
   });
 
   static parseDataToEvent = (data) => {
