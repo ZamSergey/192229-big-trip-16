@@ -22,8 +22,14 @@ export default class TripPresenter {
   #pointPresenter = new Map();
   #currentOpenFormId = null;
 
-  constructor(tripContainer) {
+  //Справочники
+  #offers = null;
+  #destinations = null;
+
+  constructor(tripContainer, offers, destinations) {
     this.#tripContainer = tripContainer;
+    this.#offers = offers;
+    this.#destinations = destinations;
   }
   //Для отладки нужен, потом убрать
 
@@ -102,7 +108,7 @@ export default class TripPresenter {
   }
 
   #renderEvent = (event) => {
-    const point = new PointPresenter(this.#eventsContainerComponent, this.#updateData, this.#resetFormView );
+    const point = new PointPresenter(this.#eventsContainerComponent, this.#updateData, this.#resetFormView, this.#offers, this.#destinations );
     point.init(event);
     this.#pointPresenter.set(event.id, point);
   }

@@ -1,5 +1,6 @@
 import dayjs from 'dayjs';
 const EVENT_TYPES = ['Taxi', 'Bus', 'Train', 'Ship', 'Drive', 'Flight', 'Check-in', 'Sightseeing', 'Restaurant'];
+const EVENT_DESTINATIONS = ['Москва', 'Санкт-Петербург', 'Тверь', 'Кострома', 'Новгород', 'Ярославль', 'Вологда', 'Краснодар', 'Тихвин', 'Ростов'];
 
 // Функция из интернета по генерации случайного числа из диапазона
 // Источник - https://github.com/you-dont-need/You-Dont-Need-Lodash-Underscore#_random
@@ -21,11 +22,10 @@ const generateEventType = () => EVENT_TYPES[getRandomInteger(0, EVENT_TYPES.leng
 
 
 const generateDestinationPoint = () => {
-  const destination = ['Москва', 'Санкт-Петербург', 'Тверь', 'Кострома', 'Новгород', 'Ярославль', 'Вологда', 'Краснодар', 'Тихвин', 'Ростов'];
 
-  const randomIndex = getRandomInteger(0, destination.length - 1);
+  const randomIndex = getRandomInteger(0, EVENT_DESTINATIONS.length - 1);
 
-  return destination[randomIndex];
+  return EVENT_DESTINATIONS[randomIndex];
 };
 
 const generateDescription = () => {
@@ -142,17 +142,16 @@ const generateNumPoints = (number) => {
   return data;
 };
 
-const generateNumDestination = (number) => {
+const generateAllDestination = () => {
   const data = [];
-  for(let i = 0; i < number; i++){
-    data.push(generateDestination());
-  }
+  EVENT_DESTINATIONS.forEach((it) => data.push({description: generateDescription(), name: it, pictures: generatePictures()}) )
+
   return data;
 };
 const generateAllOffers = () => {
   const data = [];
-  EVENT_TYPES.map((it) => data.push(generateOffers(it)))
+  EVENT_TYPES.forEach((it) => data.push(generateOffers(it)))
   return data;
 };
 
-export {generateNumPoints, generatePoint, generateNumDestination, generateAllOffers, generateDestination, EVENT_TYPES};
+export {generateNumPoints, generatePoint, generateAllDestination, generateAllOffers, generateDestination, EVENT_TYPES};
