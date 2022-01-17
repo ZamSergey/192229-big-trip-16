@@ -1,6 +1,9 @@
 import dayjs from 'dayjs';
 import {EVENT_TYPES} from '../mock/event.js';
 import SmartView from './smart-view.js';
+import flatpickr from 'flatpickr';
+
+import '../../node_modules/flatpickr/dist/flatpickr.min.css';
 
 const getDateFormat = (date,format) =>  date !== null ? dayjs(date).format(format) : '';
 
@@ -71,7 +74,7 @@ const createDescriptionSection = (destination) => (
 );
 
 const createEditFormEventTemplate = (data,destinationList) => {
-  const {id, dateStart, dateEnd, price, currentDestination, currentOffers,currentType} = data;
+  const {id, currentStart, currentEnd, price, currentDestination, currentOffers,currentType} = data;
 
   return `<li class="trip-events__item">
     <form class="event event--edit" action="#" method="post">
@@ -103,10 +106,10 @@ const createEditFormEventTemplate = (data,destinationList) => {
 
         <div class="event__field-group  event__field-group--time">
           <label class="visually-hidden" for="event-start-time-1">From</label>
-          <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${getDateFormat(dateStart,'YY/MM/DD HH:mm')}">
+          <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${getDateFormat(currentStart,'YYYY/MM/DD HH:mm')}">
           &mdash;
           <label class="visually-hidden" for="event-end-time-1">To</label>
-          <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${getDateFormat(dateEnd,'YY/MM/DD HH:mm')}">
+          <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${getDateFormat(currentEnd,'YYYY/MM/DD HH:mm')}">
         </div>
 
         <div class="event__field-group  event__field-group--price">
@@ -133,6 +136,8 @@ const createEditFormEventTemplate = (data,destinationList) => {
 
 export default class EditFormEvent extends SmartView {
   #event = null;
+  #datepickerStart = null;
+  #datepickerEnd = null;
 
   //Прокидываю справочники
   #offers = null;
@@ -144,9 +149,60 @@ export default class EditFormEvent extends SmartView {
     this._data = EditFormEvent.parseEventToData(event);
     this.#offers = offers;
     this.#destinations = destinations;
-
+    this.#setDatepickers();
     this.#setInnerHandlers();
 
+  }
+
+  // Перегружаем метод родителя removeElement,
+  // чтобы при удалении удалялся более не нужный календарь
+  removeElement = () => {
+    super.removeElement();
+
+    if (this.#datepickerStart) {
+      this.#datepickerStart.destroy();
+      this.#datepickerStart = null;
+    }
+    if (this.#datepickerEnd) {
+      this.#datepickerEnd.destroy();
+      this.#datepickerEnd = null;
+    }
+  }
+
+  #setDatepickers = () => {
+    // flatpickr есть смысл инициализировать только в случае,
+    // если поле выбора даты доступно для заполнения
+    this.#datepickerStart = flatpickr(
+      this.element.querySelector('.event__input--time[name=event-start-time]'),
+      {
+        enableTime: true,
+        dateFormat: 'y/m/d h:i',
+        defaultDate: this._data.dateStart,
+        onChange: this.#changeEventDateStartHandler, // На событие flatpickr передаём наш колбэк
+      },
+    );
+    this.#datepickerEnd = flatpickr(
+      this.element.querySelector('.event__input--time[name=event-end-time]'),
+      {
+        enableTime: true,
+        dateFormat: 'y/m/d h:i',
+        defaultDate: this._data.dateStart,
+        onChange: this.#changeEventDateEndHandler, // На событие flatpickr передаём наш колбэк
+      },
+    );
+  }
+
+  #changeEventDateStartHandler = (userData) => {
+    this.updateData({
+      currentStart: userData,
+    }, true);
+  }
+
+  #changeEventDateEndHandler = (userData) => {
+
+    this.updateData({
+      currentEnd: userData,
+    }, true);
   }
 
   #changeEventTypeHandler = (evt) => {
@@ -179,41 +235,22 @@ export default class EditFormEvent extends SmartView {
     return createEditFormEventTemplate(this._data, this.#destinations);
   }
 
-  updateElement = () => {
-    const prevElement = this.element;
-    const parent = prevElement.parentElement;
-    this.removeElement();
-
-    const newElement = this.element;
-
-    parent.replaceChild(newElement, prevElement);
-    this.restoreHandlers();
-  }
   //востанавливаем работу обработчиков
 
   restoreHandlers = () => {
     this.#setInnerHandlers();
+    this.#setDatepickers();
     this.setFormSubmitHandler(this._callback.formSubmit);
     this.setRollupBtnHandler(this._callback.rollupClick);
   }
 
   #setInnerHandlers = () => {
     this.element.querySelector('.event__type-group').addEventListener('change', this.#changeEventTypeHandler);
-    this.element.querySelector('.event__input--destination').addEventListener('change', this.#changeEventDestinationHandler);
+    this.element.querySelector('.event__input--destination').addEventListener('input', this.#changeEventDestinationHandler);
+    this.element.querySelector('.event__input--time[name=event-start-time]').addEventListener('input', this.#changeEventDateStartHandler);
+    this.element.querySelector('.event__input--time[name=event-end-time]').addEventListener('input', this.#changeEventDateEndHandler);
   }
 
-  updateData = (update,justDataUpdating) => {
-    if (!update) {
-      return;
-    }
-
-    this._data = {...this._data, ...update};
-    if (justDataUpdating) {
-      return;
-    }
-
-    this.updateElement();
-  }
 
   setFormSubmitHandler = (callback) => {
     this._callback.formSubmit = callback;
@@ -225,6 +262,8 @@ export default class EditFormEvent extends SmartView {
     currentType: event.type,
     currentOffers: event.offers,
     currentDestination: event.destination,
+    currentStart: event.dateStart ,
+    currentEnd: event.dateEnd
   });
 
   static parseDataToEvent = (data) => {
@@ -232,9 +271,14 @@ export default class EditFormEvent extends SmartView {
     event.type = data.currentType;
     event.offers = data.currentOffers;
     event.destination = data.currentDestination;
+    event.dateStart = data.currentStart ;
+    event.dateEnd = data.currentEnd;
+
     delete event.currentType;
     delete event.currentOffers;
     delete event.currentDestination;
+    delete event.currentStart;
+    delete event.currentEnd;
     return event;
   }
 
@@ -251,6 +295,12 @@ export default class EditFormEvent extends SmartView {
   #rollupBtnHandler = (evt) => {
     evt.preventDefault();
     this._callback.rollupClick();
+  }
+
+  reset = (event) => {
+    this.updateData(
+      EditFormEvent.parseEventToData(event),
+    );
   }
 
 }

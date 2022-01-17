@@ -77,6 +77,7 @@ export default class PointPresenter {
     if(this.#isDefaultView) {
       return;
     }
+    this.#editFormComponent.reset(this.#event);
     this.#replaceFormToEvent();
   };
   //Какой функционал нужно ставить в инициализацию?
@@ -100,6 +101,7 @@ export default class PointPresenter {
   #escClickHandler = (evt) => {
     if (evt.key === 'Escape' || evt.key === 'Esc') {
       evt.preventDefault();
+      this.#editFormComponent.reset(this.#event);
       this.#replaceFormToEvent();
       this.#isDefaultView = true;
     }
