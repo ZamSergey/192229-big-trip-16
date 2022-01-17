@@ -1,7 +1,7 @@
 import TripFilterView from './view/trip-filters.js';
 import ControlMenuView from './view/trip-controls.js';
 import {renderElement} from './utils/render.js';
-import {generateNumPoints} from './mock/event.js';
+import {generateNumPoints, generateAllOffers, generateAllDestination} from './mock/event.js';
 import TripPresenter from './presenter/trip-presenter.js';
 
 const TEST_POINT_COUNT = 6;
@@ -21,5 +21,7 @@ renderElement(menu, new ControlMenuView());
 renderElement(filter, new TripFilterView());
 
 const tripEventsContainer = document.querySelector('.trip-events');
+const a = generateAllDestination();
+// console.log("destinations", a)
 
-new TripPresenter(tripEventsContainer).init(generateNumPoints(TEST_POINT_COUNT));
+new TripPresenter(tripEventsContainer,generateAllOffers(),generateAllDestination()).init(generateNumPoints(TEST_POINT_COUNT));

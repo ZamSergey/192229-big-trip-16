@@ -1,18 +1,21 @@
 import dayjs from 'dayjs';
 import {EVENT_TYPES} from '../mock/event.js';
-import AbstractView from './abstract-view.js';
+import SmartView from './smart-view.js';
 
 const getDateFormat = (date,format) =>  date !== null ? dayjs(date).format(format) : '';
 
-const createEventType = (event,number) => {
+const createEventType = (event,number,isChecked) => {
   const eventLow = event.toLowerCase();
   return `<div class="event__type-item">
-    <input id="event-type-${eventLow}-${number}" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${eventLow}">
+    <input id="event-type-${eventLow}-${number}" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${eventLow}" ${isChecked ? 'checked':''}>
     <label class="event__type-label  event__type-label--${eventLow}" for="event-type-${eventLow}-${number}">${event}</label>
   </div>`;
 };
 
-const createEventList = (events) => events.map((it, i) => createEventType(it, i)).join('');
+const createEventList = (events,checkedType) => events.map((it, i) => {
+  const isChecked = checkedType === it.toLowerCase();
+  return createEventType(it, i, isChecked);
+}).join('');
 
 const createOffer = (offer) => {
   const {checked,title,price,id} = offer;
@@ -53,6 +56,9 @@ const createDescriptionImageList = (destination) => (
     : ''
 );
 
+const createDestinationItem = (destination) => `<option>${destination}</option>`;
+
+const createDescriptionList = (descriptionList) => descriptionList.map(({name}) => createDestinationItem(name) ).join('');
 
 const createDescriptionSection = (destination) => (
   destination !== null
@@ -64,36 +70,34 @@ const createDescriptionSection = (destination) => (
     : ''
 );
 
-const createEditFormEventTemplate = (event) => {
-  const {dateStart, dateEnd, price, destination, offers,type} = event;
+const createEditFormEventTemplate = (data,destinationList) => {
+  const {id, dateStart, dateEnd, price, currentDestination, currentOffers,currentType} = data;
 
   return `<li class="trip-events__item">
     <form class="event event--edit" action="#" method="post">
       <header class="event__header">
         <div class="event__type-wrapper">
-          <label class="event__type  event__type-btn" for="event-type-toggle-1">
+          <label class="event__type  event__type-btn" for="event-type-toggle-${id}">
             <span class="visually-hidden">Choose event type</span>
-            <img class="event__type-icon" width="17" height="17" src="img/icons/${type.toLowerCase()}.png" alt="Event type icon">
+            <img class="event__type-icon" width="17" height="17" src="img/icons/${currentType.toLowerCase()}.png" alt="Event type icon">
           </label>
-          <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox">
+          <input class="event__type-toggle  visually-hidden" id="event-type-toggle-${id}" type="checkbox">
 
           <div class="event__type-list">
             <fieldset class="event__type-group">
               <legend class="visually-hidden">Event type</legend>
-              ${createEventList(EVENT_TYPES)}
+              ${createEventList(EVENT_TYPES,currentType)}
             </fieldset>
           </div>
         </div>
 
         <div class="event__field-group  event__field-group--destination">
-          <label class="event__label  event__type-output" for="event-destination-1">
-            ${type}
+          <label class="event__label  event__type-output" for="event-destination-${id}">
+            ${currentType}
           </label>
-          <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination !== null ? destination.name : ''}" list="destination-list-1">
-          <datalist id="destination-list-1">
-            <option value="Amsterdam"></option>
-            <option value="Geneva"></option>
-            <option value="Chamonix"></option>
+          <input class="event__input  event__input--destination" id="event-destination-${id}" type="text" name="event-destination" value="${currentDestination !== null ? currentDestination.name : ''}" list="destination-list-${id}">
+          <datalist id="destination-list-${id}">
+            ${createDescriptionList(destinationList)}
           </datalist>
         </div>
 
@@ -120,27 +124,118 @@ const createEditFormEventTemplate = (event) => {
         </button>
       </header>
       <section class="event__details">
-            ${createOfferList(offers)}
-            ${createDescriptionSection(destination)}
+            ${createOfferList(currentOffers)}
+            ${createDescriptionSection(currentDestination)}
       </section>
     </form>
   </li>`;
 };
 
-export default class EditFormEvent extends AbstractView {
+export default class EditFormEvent extends SmartView {
   #event = null;
-  constructor(event) {
+
+  //Прокидываю справочники
+  #offers = null;
+  #destinations = null;
+
+  constructor(event, offers, destinations) {
     super();
-    this.#event = event;
+    // this.#event = event;
+    this._data = EditFormEvent.parseEventToData(event);
+    this.#offers = offers;
+    this.#destinations = destinations;
+
+    this.#setInnerHandlers();
+
   }
 
+  #changeEventTypeHandler = (evt) => {
+    evt.preventDefault();
+
+    const newType = this.element.querySelector('.event__type-input:checked').value;
+
+    if(evt.target.classList.contains('event__type-input')) {
+
+      this.updateData({
+        currentType: newType,
+        currentOffers: this.#offers.find((it)=>it.type.toLowerCase() === newType)
+      });
+    }
+  }
+
+  #changeEventDestinationHandler = (evt) => {
+    evt.preventDefault();
+    if(this.#destinations.some((it)=>it.name === evt.target.value)) {
+      this.updateData({
+        currentDestination: this.#destinations.find((it)=>it.name === evt.target.value)
+      });
+    }
+  }
+
+
   get template() {
-    return createEditFormEventTemplate(this.#event);
+    // return createEditFormEventTemplate(this.#event);
+
+    return createEditFormEventTemplate(this._data, this.#destinations);
+  }
+
+  updateElement = () => {
+    const prevElement = this.element;
+    const parent = prevElement.parentElement;
+    this.removeElement();
+
+    const newElement = this.element;
+
+    parent.replaceChild(newElement, prevElement);
+    this.restoreHandlers();
+  }
+  //востанавливаем работу обработчиков
+
+  restoreHandlers = () => {
+    this.#setInnerHandlers();
+    this.setFormSubmitHandler(this._callback.formSubmit);
+    this.setRollupBtnHandler(this._callback.rollupClick);
+  }
+
+  #setInnerHandlers = () => {
+    this.element.querySelector('.event__type-group').addEventListener('change', this.#changeEventTypeHandler);
+    this.element.querySelector('.event__input--destination').addEventListener('change', this.#changeEventDestinationHandler);
+  }
+
+  updateData = (update,justDataUpdating) => {
+    if (!update) {
+      return;
+    }
+
+    this._data = {...this._data, ...update};
+    if (justDataUpdating) {
+      return;
+    }
+
+    this.updateElement();
   }
 
   setFormSubmitHandler = (callback) => {
     this._callback.formSubmit = callback;
     this.element.querySelector('form').addEventListener('submit', this.#formSubmitHandler);
+    // this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#rollupBtnHandler);
+  }
+
+  static parseEventToData = (event) => ({...event,
+    currentType: event.type,
+    currentOffers: event.offers,
+    currentDestination: event.destination,
+  });
+
+  static parseDataToEvent = (data) => {
+    const event = {...data};
+    event.type = data.currentType;
+    event.offers = data.currentOffers;
+    event.destination = data.currentDestination;
+    delete event.currentType;
+    delete event.currentOffers;
+    delete event.currentDestination;
+    return event;
   }
 
   #formSubmitHandler = (evt) => {

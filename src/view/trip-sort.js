@@ -1,4 +1,4 @@
-import AbstractView from './abstract-view.js';
+import SmartView from './smart-view.js';
 import {SortType} from '../utils/const.js';
 
 const createTripSortTemplate = () => (
@@ -30,7 +30,7 @@ const createTripSortTemplate = () => (
   </form>`
 );
 
-export default class TripSortView extends AbstractView{
+export default class TripSortView extends SmartView {
   get template() {
     return createTripSortTemplate();
   }

@@ -14,14 +14,21 @@ export default class PointPresenter {
 
   #event = null;
 
+  //Справочники
+  #offers = null;
+  #destinations = null;
+
   get isDefaultView() {
     return this.#isDefaultView;
   }
 
-  constructor(pointContainer, updateDataHandler, resetFormView) {
+  constructor(pointContainer, updateDataHandler, resetFormView, offers, destinations) {
     this.#pointContainer = pointContainer;
     this.#updateDataHandler = updateDataHandler;
     this.#resetFormView = resetFormView;
+    //Прокидываю справочники
+    this.#offers = offers;
+    this.#destinations = destinations;
   }
 
   init = (event) => {
@@ -29,7 +36,7 @@ export default class PointPresenter {
     this.#isDefaultView = true;
 
     this.#eventViewComponent = new EventView(event);
-    this.#editFormComponent = new EditFormEvent(event);
+    this.#editFormComponent = new EditFormEvent(event, this.#offers, this.#destinations);
 
     this.#editFormComponent.setFormSubmitHandler(()=> {
       this.#replaceFormToEvent();
