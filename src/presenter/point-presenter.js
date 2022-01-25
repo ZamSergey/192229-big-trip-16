@@ -1,10 +1,17 @@
 import EditFormEvent from '../view/event-edit.js';
 import EventView from '../view/event-view.js';
 import {renderElement, replace, remove} from '../utils/render.js';
+import {UserAction, UpdateType} from '../utils/const.js';
 
+const Mode = {
+  DEFAULT: 'DEFAULT',
+  EDITING: 'EDITING',
+};
 
 export default class PointPresenter {
   #pointContainer = null;
+  #changeData = null;
+  #changeMode = null;
 
   #eventViewComponent = null;
   #editFormComponent = null;
@@ -38,21 +45,21 @@ export default class PointPresenter {
     this.#eventViewComponent = new EventView(event);
     this.#editFormComponent = new EditFormEvent(event, this.#offers, this.#destinations);
 
-    this.#editFormComponent.setFormSubmitHandler(()=> {
+    this.#editFormComponent.setFormSubmitHandler(this.#handleFormSubmit);
+
+    this.#editFormComponent.setRollupBtnHandler(() => {
       this.#replaceFormToEvent();
     });
 
-    this.#editFormComponent.setRollupBtnHandler(()=> {
-      this.#replaceFormToEvent();
-    });
-
-    this.#eventViewComponent.setRollupBtnHandler(()=> {
+    this.#eventViewComponent.setRollupBtnHandler(() => {
       this.#replaceEventToForm();
     });
 
     this.#eventViewComponent.setFavoriteHandler(()=> {
       this.#changeFavoriteBtnHandler();
     });
+
+    this.#eventViewComponent.setDeleteClickHandler(this.#handleDeleteClick);
 
     this.#renderEvent();
   }
@@ -107,12 +114,29 @@ export default class PointPresenter {
     }
   };
 
+  #handleFormSubmit = (event) => {
+    this.#changeData(
+      UserAction.UPDATE_POINT,
+      UpdateType.MINOR,
+      event,
+    );
+    this.#replaceFormToEvent();
+  }
+
+  #handleDeleteClick = (event) => {
+    this.#changeData(
+      UserAction.DELETE_POINT,
+      UpdateType.MINOR,
+      event,
+    );
+  }
+
   #changeFavoriteBtnHandler = () => {
     //Меняем значение ifFavorite и отправлем изменения в trip-presenter
 
     this.#event = Object.assign({}, this.#event, {isFavorite: !this.#event.isFavorite});
 
-    this.#updateDataHandler(this.#event);
+    this.#updateDataHandler(UserAction.UPDATE_POINT,UpdateType.MINOR,this.#event);
   };
 
   #renderEvent = () => {

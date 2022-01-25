@@ -1,10 +1,10 @@
 import SmartView from './smart-view.js';
 import {SortType} from '../utils/const.js';
 
-const createTripSortTemplate = () => (
+const createTripSortTemplate = (currentSortType) => (
   `<form class="trip-events__trip-sort  trip-sort" action="#" method="get">
     <div class="trip-sort__item  trip-sort__item--day">
-      <input id="sort-day" class="trip-sort__input  visually-hidden" type="radio" name="trip-sort" value="sort-day"  checked>
+      <input id="sort-day" class="trip-sort__input  visually-hidden" type="radio" name="trip-sort" value="sort-day"  ${currentSortType === SortType.DEFAULT ? 'checked':''}>
       <label class="trip-sort__btn" for="sort-day" data-sort-by="${SortType.DEFAULT}">Day</label>
     </div>
 
@@ -14,12 +14,12 @@ const createTripSortTemplate = () => (
     </div>
 
     <div class="trip-sort__item  trip-sort__item--time">
-      <input id="sort-time" class="trip-sort__input  visually-hidden" type="radio" name="trip-sort" value="sort-time">
+      <input id="sort-time" class="trip-sort__input  visually-hidden" type="radio" name="trip-sort" value="sort-time"  ${currentSortType === SortType.TIME ? 'checked':''}>
       <label class="trip-sort__btn" for="sort-time"  data-sort-by="${SortType.TIME}">Time</label>
     </div>
 
     <div class="trip-sort__item  trip-sort__item--price">
-      <input id="sort-price" class="trip-sort__input  visually-hidden" type="radio" name="trip-sort" value="sort-price" >
+      <input id="sort-price" class="trip-sort__input  visually-hidden" type="radio" name="trip-sort" value="sort-price"  ${currentSortType === SortType.PRICE ? 'checked':''}>
       <label class="trip-sort__btn" for="sort-price"  data-sort-by="${SortType.PRICE}">Price</label>
     </div>
 
@@ -31,8 +31,15 @@ const createTripSortTemplate = () => (
 );
 
 export default class TripSortView extends SmartView {
+  #currentSortType = null;
+
+  constructor(currentSortType) {
+    super();
+    this.#currentSortType = currentSortType;
+  }
+
   get template() {
-    return createTripSortTemplate();
+    return createTripSortTemplate(this.#currentSortType);
   }
 
   setSortChangeHandler = (callback) => {
@@ -41,7 +48,6 @@ export default class TripSortView extends SmartView {
   }
 
   #sortChangeHandler = (evt) => {
-
     if (evt.target.tagName !== 'LABEL') {
       return;
     }
