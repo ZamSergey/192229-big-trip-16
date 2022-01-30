@@ -91,6 +91,8 @@ export default class EventView extends  AbstractView {
     this.element.querySelector('.event__favorite-btn').addEventListener('click',this.#favoriteBtnHandler);
   }
 
+
+
   #favoriteBtnHandler = (evt) => {
     evt.preventDefault();
     this._callback.favoriteClick(evt);

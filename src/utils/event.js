@@ -22,6 +22,13 @@ export const sortByTime = (eventA, eventB) => {
   return weight ?? dayjs(eventA.dateStart).diff(dayjs(eventB.dateStart));
 };
 
+export const isEventPast = (event) => {
+  console.log('isEventPast',event)
+  return dayjs(event.dateEnd) < dayjs() ;
+};
+export const isEventFuture = (event) => dayjs(event.dateStart) > dayjs() ;
+
+
 /*
 export const sortTaskDown = (eventA, taskB) => {
   const weight = getWeightForNullDate(taskA.dueDate, taskB.dueDate);
@@ -32,3 +39,5 @@ export const sortTaskDown = (eventA, taskB) => {
 
 export const sortByPrice = (eventA, eventB) => eventB.price - eventA.price;
 
+export const isDatesEqual = (dateA, dateB) => (dateA === null && dateB === null) || dayjs(dateA).isSame(dateB);
+export const isPriseEqual = (priceA, priceB) => priceA === priceB;

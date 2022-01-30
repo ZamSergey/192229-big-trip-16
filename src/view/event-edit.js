@@ -4,6 +4,7 @@ import SmartView from './smart-view.js';
 import flatpickr from 'flatpickr';
 
 import '../../node_modules/flatpickr/dist/flatpickr.min.css';
+import {UpdateType, UserAction} from "../utils/const";
 
 const getDateFormat = (date,format) =>  date !== null ? dayjs(date).format(format) : '';
 
@@ -134,10 +135,17 @@ const createEditFormEventTemplate = (data,destinationList) => {
   </li>`;
 };
 
+const Mode = {
+  DEFAULT: 'DEFAULT',
+  EDITING: 'EDITING',
+};
+
 export default class EditFormEvent extends SmartView {
   #event = null;
   #datepickerStart = null;
   #datepickerEnd = null;
+  #changeData = null;
+  #changeMode = null;
 
   //Прокидываю справочники
   #offers = null;
@@ -147,6 +155,7 @@ export default class EditFormEvent extends SmartView {
     super();
     // this.#event = event;
     this._data = EditFormEvent.parseEventToData(event);
+
     this.#offers = offers;
     this.#destinations = destinations;
     this.#setDatepickers();
@@ -231,7 +240,6 @@ export default class EditFormEvent extends SmartView {
 
   get template() {
     // return createEditFormEventTemplate(this.#event);
-
     return createEditFormEventTemplate(this._data, this.#destinations);
   }
 
@@ -242,6 +250,7 @@ export default class EditFormEvent extends SmartView {
     this.#setDatepickers();
     this.setFormSubmitHandler(this._callback.formSubmit);
     this.setRollupBtnHandler(this._callback.rollupClick);
+    this.setDeleteClickHandler(this._callback.deleteClick);
   }
 
   #setInnerHandlers = () => {
@@ -249,6 +258,7 @@ export default class EditFormEvent extends SmartView {
     this.element.querySelector('.event__input--destination').addEventListener('input', this.#changeEventDestinationHandler);
     this.element.querySelector('.event__input--time[name=event-start-time]').addEventListener('input', this.#changeEventDateStartHandler);
     this.element.querySelector('.event__input--time[name=event-end-time]').addEventListener('input', this.#changeEventDateEndHandler);
+    this.element.querySelector('.event__reset-btn').addEventListener('click', this.#formDeleteClickHandler);
   }
 
 
@@ -257,6 +267,12 @@ export default class EditFormEvent extends SmartView {
     this.element.querySelector('form').addEventListener('submit', this.#formSubmitHandler);
     // this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#rollupBtnHandler);
   }
+
+  setDeleteClickHandler = (callback) => {
+    this._callback.deleteClick = callback;
+    this.element.querySelector('.event__reset-btn').addEventListener('click', this.#formDeleteClickHandler);
+  }
+
 
   static parseEventToData = (event) => ({...event,
     currentType: event.type,
@@ -285,6 +301,11 @@ export default class EditFormEvent extends SmartView {
   #formSubmitHandler = (evt) => {
     evt.preventDefault();
     this._callback.formSubmit();
+  }
+
+  #formDeleteClickHandler = (evt) => {
+    evt.preventDefault();
+    this._callback.deleteClick(EditFormEvent.parseDataToEvent(this._data));
   }
 
   setRollupBtnHandler = (callback) => {
