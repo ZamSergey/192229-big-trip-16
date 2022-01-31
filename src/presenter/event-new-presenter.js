@@ -1,4 +1,4 @@
-import TaskEditView from '../view/event-edit';
+import EditFormEvent from '../view/event-edit';
 import {nanoid} from 'nanoid';
 import {remove, renderElement, RenderPosition} from '../utils/render.js';
 import {UserAction, UpdateType} from '../utils/const.js';
@@ -18,7 +18,7 @@ export default class EventNewPresenter {
       return;
     }
 
-    this.#eventEditComponent = new TaskEditView();
+    this.#eventEditComponent = new EditFormEvent();
     this.#eventEditComponent.setFormSubmitHandler(this.#handleFormSubmit);
     this.#eventEditComponent.setDeleteClickHandler(this.#handleDeleteClick);
 

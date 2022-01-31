@@ -135,11 +135,6 @@ const createEditFormEventTemplate = (data,destinationList) => {
   </li>`;
 };
 
-const Mode = {
-  DEFAULT: 'DEFAULT',
-  EDITING: 'EDITING',
-};
-
 export default class EditFormEvent extends SmartView {
   #event = null;
   #datepickerStart = null;
@@ -160,7 +155,6 @@ export default class EditFormEvent extends SmartView {
     this.#destinations = destinations;
     this.#setDatepickers();
     this.#setInnerHandlers();
-
   }
 
   // Перегружаем метод родителя removeElement,
