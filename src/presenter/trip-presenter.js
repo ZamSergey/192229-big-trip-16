@@ -36,16 +36,12 @@ export default class TripPresenter {
   #pointPresenter = new Map();
   #currentOpenFormId = null;
 
-  //Справочники
-  #offers = null;
-  #destinations = null;
 
-  constructor(tripContainer, pointsModel, filterModel, offers, destinations) {
+  constructor(tripContainer, pointsModel, filterModel) {
     this.#tripContainer = tripContainer;
     this.#pointsModel = pointsModel;
     this.#filterModel = filterModel;
-    this.#offers = offers;
-    this.#destinations = destinations;
+
 
     this.#eventNewPresenter = new EventNewPresenter(this.#eventsContainerComponent, this.#handleViewAction);
 
@@ -133,7 +129,7 @@ export default class TripPresenter {
       case UpdateType.PATCH:
         // - обновить часть списка (например, когда поменялось описание)
         // у меня в итоге получилось иначе чем в учебном примере и я пока не понял как переделать...
-        this.#pointPresenter.get(data.id).update(data);
+        this.#pointPresenter.get(data.id).init(data);
         break;
       case UpdateType.MINOR:
         // - обновить список (например, когда задача ушла в архив)
@@ -223,7 +219,7 @@ export default class TripPresenter {
   }
 
   #renderEvent = (event) => {
-    const point = new PointPresenter(this.#eventsContainerComponent, this.#handleViewAction, this.#handleModeChange, this.#offers, this.#destinations );
+    const point = new PointPresenter(this.#eventsContainerComponent, this.#handleViewAction, this.#handleModeChange);
     // const point = new PointPresenter(this.#eventsContainerComponent, this.#updateData, this.#resetFormView, this.#offers, this.#destinations );
     point.init(event);
     this.#pointPresenter.set(event.id, point);

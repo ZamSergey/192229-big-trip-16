@@ -156,4 +156,7 @@ const generateAllOffers = () => {
   return data;
 };
 
-export {generateNumPoints, generatePoint, generateAllDestination, generateAllOffers, generateDestination, EVENT_TYPES};
+const OFFERS = generateAllOffers();
+const DESTINATIONS = generateAllDestination();
+
+export {generateNumPoints, generatePoint, generateAllDestination, generateAllOffers, generateDestination,generateOffers, EVENT_TYPES,OFFERS,DESTINATIONS};

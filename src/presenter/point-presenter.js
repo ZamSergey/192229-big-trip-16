@@ -22,20 +22,13 @@ export default class PointPresenter {
   #mode = Mode.DEFAULT;
   #event = null;
 
-  //Справочники
-  #offers = null;
-  #destinations = null;
 
-  constructor(pointContainer, changeData, changeMode, offers, destinations) {
+  constructor(pointContainer, changeData, changeMode) {
     this.#pointContainer = pointContainer;
     this.#changeData = changeData;
     this.#changeMode = changeMode;
 
     // this.#resetFormView = resetFormView;
-    //Прокидываю справочники
-    this.#offers = offers;
-    this.#destinations = destinations;
-
   }
 
   init = (event) => {
@@ -47,7 +40,7 @@ export default class PointPresenter {
 
     this.#eventViewComponent = new EventView(event);
 
-    this.#editFormComponent = new EditFormEvent(event, this.#offers, this.#destinations);
+    this.#editFormComponent = new EditFormEvent(event);
 
     this.#editFormComponent.setFormSubmitHandler(this.#handleFormSubmit);
     this.#editFormComponent.setDeleteClickHandler(this.#handleDeleteClick);
@@ -81,6 +74,8 @@ export default class PointPresenter {
 
   update = (newEvent) => {
     const newPoint =  new EventView(newEvent);
+    console.log('newPoint',newPoint)
+    console.log('old',this.#eventViewComponent)
     replace(newPoint, this.#eventViewComponent);
     //Удаляю старый элемент
     this.#eventViewComponent.removeElement();
@@ -122,6 +117,7 @@ export default class PointPresenter {
   #handleFormSubmit = (update) => {
     // Проверяем, поменялись ли в задаче данные, которые попадают под фильтрацию,
     // а значит требуют перерисовки списка - если таких нет, это PATCH-обновление
+    console.log(update)
     const isMinorUpdate =
       !isDatesEqual(this.#event.dateStart, update.dateStart) ||
       !isDatesEqual(this.#event.dateEnd, update.dateEnd) ||

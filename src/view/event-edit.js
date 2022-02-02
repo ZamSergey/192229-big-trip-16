@@ -1,10 +1,22 @@
 import dayjs from 'dayjs';
-import {EVENT_TYPES} from '../mock/event.js';
+import he from 'he';
+import {EVENT_TYPES,generateDestination,generateOffers,OFFERS,DESTINATIONS} from '../mock/event.js';
 import SmartView from './smart-view.js';
 import flatpickr from 'flatpickr';
+import {nanoid} from 'nanoid';
 
 import '../../node_modules/flatpickr/dist/flatpickr.min.css';
 import {UpdateType, UserAction} from "../utils/const";
+
+
+const EMPTY_EVENT = {type: 'Taxi',
+  destination: generateDestination(),
+  offers: generateOffers('Taxi'),
+  id: nanoid(),
+  isFavorite: false,
+  dateStart: dayjs(),
+  dateEnd: dayjs(),
+  price: 0};
 
 const getDateFormat = (date,format) =>  date !== null ? dayjs(date).format(format) : '';
 
@@ -75,7 +87,7 @@ const createDescriptionSection = (destination) => (
 );
 
 const createEditFormEventTemplate = (data,destinationList) => {
-  const {id, currentStart, currentEnd, price, currentDestination, currentOffers,currentType} = data;
+  const {id, currentStart, currentEnd, currentPrice, currentDestination, currentOffers,currentType} = data;
 
   return `<li class="trip-events__item">
     <form class="event event--edit" action="#" method="post">
@@ -118,7 +130,7 @@ const createEditFormEventTemplate = (data,destinationList) => {
             <span class="visually-hidden">Price</span>
             &euro;
           </label>
-          <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${price}">
+          <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${currentPrice}">
         </div>
 
         <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
@@ -135,6 +147,7 @@ const createEditFormEventTemplate = (data,destinationList) => {
   </li>`;
 };
 
+
 export default class EditFormEvent extends SmartView {
   #event = null;
   #datepickerStart = null;
@@ -146,13 +159,13 @@ export default class EditFormEvent extends SmartView {
   #offers = null;
   #destinations = null;
 
-  constructor(event, offers, destinations) {
+  constructor(event = EMPTY_EVENT) {
     super();
     // this.#event = event;
     this._data = EditFormEvent.parseEventToData(event);
 
-    this.#offers = offers;
-    this.#destinations = destinations;
+    this.#offers = OFFERS;
+    this.#destinations = DESTINATIONS;
     this.#setDatepickers();
     this.#setInnerHandlers();
   }
@@ -208,6 +221,12 @@ export default class EditFormEvent extends SmartView {
     }, true);
   }
 
+  #changeEventPriceHandler = (userData) => {
+    this.updateData({
+      currentPrice: userData.target.value,
+    }, true);
+  }
+
   #changeEventTypeHandler = (evt) => {
     evt.preventDefault();
 
@@ -245,6 +264,7 @@ export default class EditFormEvent extends SmartView {
     this.setFormSubmitHandler(this._callback.formSubmit);
     this.setRollupBtnHandler(this._callback.rollupClick);
     this.setDeleteClickHandler(this._callback.deleteClick);
+    this.setChangeEventPriceHandler(this._callback.changePrice);
   }
 
   #setInnerHandlers = () => {
@@ -252,13 +272,21 @@ export default class EditFormEvent extends SmartView {
     this.element.querySelector('.event__input--destination').addEventListener('input', this.#changeEventDestinationHandler);
     this.element.querySelector('.event__input--time[name=event-start-time]').addEventListener('input', this.#changeEventDateStartHandler);
     this.element.querySelector('.event__input--time[name=event-end-time]').addEventListener('input', this.#changeEventDateEndHandler);
+    this.element.querySelector('.event__input--price[name=event-price]').addEventListener('change', this.#changeEventPriceHandler);
     this.element.querySelector('.event__reset-btn').addEventListener('click', this.#formDeleteClickHandler);
+    this.element.querySelector('form').addEventListener('submit', this.#formSubmitHandler);
   }
 
 
   setFormSubmitHandler = (callback) => {
     this._callback.formSubmit = callback;
     this.element.querySelector('form').addEventListener('submit', this.#formSubmitHandler);
+    // this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#rollupBtnHandler);
+  }
+
+  setChangeEventPriceHandler = (callback) => {
+    this._callback.changePrice = callback;
+    this.element.querySelector('.event__input--price[name=event-price]').addEventListener('change',  this.#changeEventPriceHandler);
     // this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#rollupBtnHandler);
   }
 
@@ -273,7 +301,8 @@ export default class EditFormEvent extends SmartView {
     currentOffers: event.offers,
     currentDestination: event.destination,
     currentStart: event.dateStart ,
-    currentEnd: event.dateEnd
+    currentEnd: event.dateEnd,
+    currentPrice: event.price
   });
 
   static parseDataToEvent = (data) => {
@@ -283,18 +312,20 @@ export default class EditFormEvent extends SmartView {
     event.destination = data.currentDestination;
     event.dateStart = data.currentStart ;
     event.dateEnd = data.currentEnd;
+    event.price = data.currentPrice;
 
     delete event.currentType;
     delete event.currentOffers;
     delete event.currentDestination;
     delete event.currentStart;
     delete event.currentEnd;
+    delete event.currentPrice;
     return event;
   }
 
   #formSubmitHandler = (evt) => {
     evt.preventDefault();
-    this._callback.formSubmit();
+    this._callback.formSubmit(EditFormEvent.parseDataToEvent(this._data));
   }
 
   #formDeleteClickHandler = (evt) => {

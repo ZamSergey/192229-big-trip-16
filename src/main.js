@@ -55,6 +55,5 @@ tripPresenter.init();
 
 document.querySelector('.trip-main__event-add-btn').addEventListener('click', (evt) => {
   evt.preventDefault();
-  console.log('main createEvent');
   tripPresenter.createEvent();
 });
