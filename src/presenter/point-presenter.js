@@ -1,52 +1,55 @@
 import EditFormEvent from '../view/event-edit.js';
 import EventView from '../view/event-view.js';
 import {renderElement, replace, remove} from '../utils/render.js';
+import {UserAction, UpdateType} from '../utils/const.js';
+import {isDatesEqual,isPriseEqual} from '../utils/event';
 
+const Mode = {
+  DEFAULT: 'DEFAULT',
+  EDITING: 'EDITING',
+};
 
 export default class PointPresenter {
   #pointContainer = null;
+  #changeData = null;
+  #changeMode = null;
 
   #eventViewComponent = null;
   #editFormComponent = null;
-  #updateDataHandler = null;
-  #resetFormView = null;
-  #isDefaultView = false;
 
+  // #resetFormView = null;
+  // #isDefaultView = false;
+  #mode = Mode.DEFAULT;
   #event = null;
 
-  //Справочники
-  #offers = null;
-  #destinations = null;
 
-  get isDefaultView() {
-    return this.#isDefaultView;
-  }
-
-  constructor(pointContainer, updateDataHandler, resetFormView, offers, destinations) {
+  constructor(pointContainer, changeData, changeMode) {
     this.#pointContainer = pointContainer;
-    this.#updateDataHandler = updateDataHandler;
-    this.#resetFormView = resetFormView;
-    //Прокидываю справочники
-    this.#offers = offers;
-    this.#destinations = destinations;
+    this.#changeData = changeData;
+    this.#changeMode = changeMode;
+
+    // this.#resetFormView = resetFormView;
   }
 
   init = (event) => {
     this.#event = event;
-    this.#isDefaultView = true;
+    // this.#isDefaultView = true;
+
+    const prevEventViewComponent = this.#eventViewComponent;
+    const prevEditFormComponent = this.#editFormComponent;
 
     this.#eventViewComponent = new EventView(event);
-    this.#editFormComponent = new EditFormEvent(event, this.#offers, this.#destinations);
 
-    this.#editFormComponent.setFormSubmitHandler(()=> {
+    this.#editFormComponent = new EditFormEvent(event);
+
+    this.#editFormComponent.setFormSubmitHandler(this.#handleFormSubmit);
+    this.#editFormComponent.setDeleteClickHandler(this.#handleDeleteClick);
+
+    this.#editFormComponent.setRollupBtnHandler(() => {
       this.#replaceFormToEvent();
     });
 
-    this.#editFormComponent.setRollupBtnHandler(()=> {
-      this.#replaceFormToEvent();
-    });
-
-    this.#eventViewComponent.setRollupBtnHandler(()=> {
+    this.#eventViewComponent.setRollupBtnHandler(() => {
       this.#replaceEventToForm();
     });
 
@@ -54,11 +57,25 @@ export default class PointPresenter {
       this.#changeFavoriteBtnHandler();
     });
 
-    this.#renderEvent();
+    if (prevEventViewComponent === null) {
+      renderElement(this.#pointContainer, this.#eventViewComponent);
+      return;
+    }
+
+    if (this.#mode === Mode.DEFAULT) {
+      replace(this.#eventViewComponent, prevEventViewComponent);
+    }
+    if (this.#mode === Mode.EDITING) {
+      replace(this.#editFormComponent, prevEditFormComponent);
+    }
+    remove(prevEventViewComponent);
+    remove(prevEditFormComponent);
   }
 
   update = (newEvent) => {
     const newPoint =  new EventView(newEvent);
+    console.log('newPoint',newPoint)
+    console.log('old',this.#eventViewComponent)
     replace(newPoint, this.#eventViewComponent);
     //Удаляю старый элемент
     this.#eventViewComponent.removeElement();
@@ -73,29 +90,20 @@ export default class PointPresenter {
     });
   }
 
-  resetViewToDefault = () => {
-    if(this.#isDefaultView) {
-      return;
-    }
-    this.#editFormComponent.reset(this.#event);
-    this.#replaceFormToEvent();
-  };
-  //Какой функционал нужно ставить в инициализацию?
-  //Где лучше хранить параметры для инициализации?
 
    #replaceFormToEvent = () => {
      replace(this.#eventViewComponent, this.#editFormComponent);
-     this.#isDefaultView = true;
      // eslint-disable-next-line no-use-before-define
      document.removeEventListener('keydown',this.#escClickHandler);
+     this.#mode = Mode.DEFAULT;
    };
 
   #replaceEventToForm = () => {
-    this.#resetFormView();
     replace( this.#editFormComponent,this.#eventViewComponent);
-    this.#isDefaultView = false;
     // eslint-disable-next-line no-use-before-define
     document.addEventListener('keydown',this.#escClickHandler);
+    this.#changeMode();
+    this.#mode = Mode.EDITING;
   };
 
   #escClickHandler = (evt) => {
@@ -103,24 +111,57 @@ export default class PointPresenter {
       evt.preventDefault();
       this.#editFormComponent.reset(this.#event);
       this.#replaceFormToEvent();
-      this.#isDefaultView = true;
     }
   };
+
+  #handleFormSubmit = (update) => {
+    // Проверяем, поменялись ли в задаче данные, которые попадают под фильтрацию,
+    // а значит требуют перерисовки списка - если таких нет, это PATCH-обновление
+    console.log(update)
+    const isMinorUpdate =
+      !isDatesEqual(this.#event.dateStart, update.dateStart) ||
+      !isDatesEqual(this.#event.dateEnd, update.dateEnd) ||
+      !isPriseEqual(this.#event.price, update.price);
+
+    this.#changeData(
+      UserAction.UPDATE_POINT,
+      isMinorUpdate ? UpdateType.MINOR : UpdateType.PATCH,
+      update,
+    );
+    this.#replaceFormToEvent();
+  }
+
 
   #changeFavoriteBtnHandler = () => {
     //Меняем значение ifFavorite и отправлем изменения в trip-presenter
 
     this.#event = Object.assign({}, this.#event, {isFavorite: !this.#event.isFavorite});
 
-    this.#updateDataHandler(this.#event);
+    this.#changeData(UserAction.UPDATE_POINT,UpdateType.MINOR,this.#event);
   };
 
   #renderEvent = () => {
     renderElement(this.#pointContainer, this.#eventViewComponent);
   };
 
+  resetView = () => {
+    if (this.#mode !== Mode.DEFAULT) {
+      this.#editFormComponent.reset(this.#event);
+      this.#replaceFormToEvent();
+    }
+  }
+
   destroy = () => {
     remove(this.#editFormComponent);
     remove(this.#eventViewComponent);
+  }
+
+  #handleDeleteClick = (event) => {
+    this.#changeData(
+      UserAction.DELETE_POINT,
+      UpdateType.MINOR,
+      event,
+    );
+    // this.#replaceFormToEvent();
   }
 }

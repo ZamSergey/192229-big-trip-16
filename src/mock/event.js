@@ -1,6 +1,8 @@
 import dayjs from 'dayjs';
-const EVENT_TYPES = ['Taxi', 'Bus', 'Train', 'Ship', 'Drive', 'Flight', 'Check-in', 'Sightseeing', 'Restaurant'];
-const EVENT_DESTINATIONS = ['Москва', 'Санкт-Петербург', 'Тверь', 'Кострома', 'Новгород', 'Ярославль', 'Вологда', 'Краснодар', 'Тихвин', 'Ростов'];
+import {EVENT_TYPES} from '../utils/const';
+import {EVENT_DESTINATIONS} from '../utils/const';
+// const EVENT_TYPES = ['Taxi', 'Bus', 'Train', 'Ship', 'Drive', 'Flight', 'Check-in', 'Sightseeing', 'Restaurant'];
+// const EVENT_DESTINATIONS = ['Москва', 'Санкт-Петербург', 'Тверь', 'Кострома', 'Новгород', 'Ярославль', 'Вологда', 'Краснодар', 'Тихвин', 'Ростов'];
 
 // Функция из интернета по генерации случайного числа из диапазона
 // Источник - https://github.com/you-dont-need/You-Dont-Need-Lodash-Underscore#_random
@@ -154,4 +156,7 @@ const generateAllOffers = () => {
   return data;
 };
 
-export {generateNumPoints, generatePoint, generateAllDestination, generateAllOffers, generateDestination, EVENT_TYPES};
+const OFFERS = generateAllOffers();
+const DESTINATIONS = generateAllDestination();
+
+export {generateNumPoints, generatePoint, generateAllDestination, generateAllOffers, generateDestination,generateOffers, EVENT_TYPES,OFFERS,DESTINATIONS};
