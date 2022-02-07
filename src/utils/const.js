@@ -24,3 +24,8 @@ export const FilterType = {
   FUTURE: 'future',
   PAST: 'past',
 };
+
+export const MenuItem = {
+  LIST: 'LIST',
+  STATISTICS: 'STATISTICS',
+};

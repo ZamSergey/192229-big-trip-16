@@ -45,8 +45,7 @@ export default class TripPresenter {
 
     this.#eventNewPresenter = new EventNewPresenter(this.#eventsContainerComponent, this.#handleViewAction);
 
-    this.#pointsModel.addObserver(this.#handleModelEvent);
-    this.#filterModel.addObserver(this.#handleModelEvent);
+
   }
 
   get points() {
@@ -72,7 +71,12 @@ export default class TripPresenter {
     // this.#tripEventsSortComponent.setSortChangeHandler(this.#handleSortChange);
 
     // this.#renderTripEvents(this.points);
+
+    this.#pointsModel.addObserver(this.#handleModelEvent);
+    this.#filterModel.addObserver(this.#handleModelEvent);
+
     this.#renderTrip();
+
   }
 
   /*#updateData = (data) => {
@@ -90,10 +94,10 @@ export default class TripPresenter {
 
   };*/
 
-  createEvent = () => {
+  createEvent = (callback) => {
     this.#currentSort = SortType.DEFAULT;
     this.#filterModel.setFilter(UpdateType.MAJOR, FilterType.EVERYTHING);
-    this.#eventNewPresenter.init();
+    this.#eventNewPresenter.init(callback);
   }
 
 
@@ -234,20 +238,16 @@ export default class TripPresenter {
     renderElement(this.#tripContainer, this.#eventEmptyListComponent);
   }
 
-/*  #renderTripEvents = (events) => {
-    if(TEST_POINT_COUNT > 0) {
-      this.#renderEvents(events);
-    }
-    else {
-      this.#renderNoEvents();
-    }
-  }*/
+  destroy = () => {
+    this.#clearTrip({resetRenderedPointCount: true, resetSortType: true});
 
-/*  #resetFormView = () => {
-    this.#pointPresenter.forEach((it,key) => {
-      this.#pointPresenter.get(key).resetViewToDefault();
-    });
-  }*/
+    remove(this.#tripEventsSortComponent);
+    remove(this.#eventsContainerComponent);
+
+    this.#pointsModel.removeObserver(this.#handleModelEvent);
+    this.#filterModel.removeObserver(this.#handleModelEvent);
+
+  }
 
 }
 
